@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "2026.08.28.1",
+  "adapters": [
+    {
+      "id": "cloud-pass",
+      "file": "rules/cloud-pass.json",
+      "enabled": true
+    }
+  ]
+}
