@@ -1,35 +1,91 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "cloud-pass",
   "name": "CLOUD PASS",
-  "version": "2026.08.28.1",
+  "version": "2026.08.28.2",
   "match": {
     "hosts": ["cloud-pass.jp"]
   },
-  "behavior": {
-    "entry": {
-      "onFillAction": {
-        "clickText": ["申込画面に進む"]
-      }
+  "stages": [
+    {
+      "id": "entry",
+      "paths": [{"prefix": "/pr/"}],
+      "fillActions": [
+        {
+          "type": "clickText",
+          "texts": ["申込画面に進む"],
+          "stopAfterClick": true
+        }
+      ],
+      "agreeActions": []
     },
-    "application": {
-      "dateSelection": "manual",
-      "quantity": "max",
-      "memberFields": {
-        "氏名": "fullName",
-        "住所（都道府県）": "prefecture",
-        "住所（市区町村）": "address1",
-        "住所（番地、建物名、部屋番号等※本人様確認書類と同じ表記でご入力ください）": "address2",
-        "電話番号": "phoneDigits"
-      },
-      "idDocumentFieldLabel": "当日お持ちいただく顔写真付きの本人確認書類をご登録ください。",
-      "consent": {
-        "positiveOptions": ["はい", "同意する"]
-      }
+    {
+      "id": "application",
+      "paths": [{"prefix": "/tp/ticket/provision/"}],
+      "fillActions": [
+        {
+          "type": "selectMaxByLabel",
+          "labelRegex": "数量|BOX選択|個選択|0[～〜-]\\d+",
+          "selector": "select[id^=\"additional_field_\"]",
+          "delayMs": 220,
+          "maxPasses": 4
+        },
+        {
+          "type": "selectProfileByLabel",
+          "labelRegex": "本人確認書類をご登録|本人確認書類.*持参",
+          "selector": "select[id^=\"additional_field_\"]",
+          "profileKey": "identityDocument",
+          "delayMs": 180,
+          "maxPasses": 3
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^氏名|氏名（必須）",
+          "selector": "input[id^=\"additional_field_\"]",
+          "profileKey": "__fullNameExact"
+        },
+        {
+          "type": "selectProfileByLabel",
+          "labelRegex": "住所（都道府県）",
+          "selector": "select[id^=\"additional_field_\"]",
+          "profileKey": "prefecture",
+          "delayMs": 180,
+          "maxPasses": 3
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "住所（市区町村）",
+          "selector": "input[id^=\"additional_field_\"]",
+          "profileKey": "address1"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "住所（番地",
+          "selector": "input[id^=\"additional_field_\"]",
+          "profileKey": "address2"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号",
+          "selector": "input[id^=\"additional_field_\"]",
+          "profileKey": "phone",
+          "transform": "digits"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "selectPositivePairs",
+          "selector": "select[id^=\"additional_field_\"]",
+          "pairs": [["はい", "いいえ"], ["同意する", "同意しない"]],
+          "delayMs": 250,
+          "maxPasses": 6
+        }
+      ]
     }
-  },
+  ],
   "safety": {
-    "neverClickTexts": ["申し込む", "この内容で申し込む", "購入する", "確定"],
+    "dateSelection": "manual",
+    "neverClickTexts": ["申し込む", "この内容で申し込む", "購入する", "確定", "送信"],
     "ignoreAutocompletePrefixes": ["cc-"]
   }
 }
