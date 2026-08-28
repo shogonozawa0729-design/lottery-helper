@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "cloud-pass",
   "name": "CLOUD PASS",
-  "version": "2026.08.28.2",
+  "version": "2026.08.28.3",
   "match": {
     "hosts": ["cloud-pass.jp"]
   },
@@ -35,6 +35,16 @@
           "labelRegex": "本人確認書類をご登録|本人確認書類.*持参",
           "selector": "select[id^=\"additional_field_\"]",
           "profileKey": "identityDocument",
+          "delayMs": 180,
+          "maxPasses": 3
+        },
+        {
+          "type": "selectPositivePairs",
+          "selector": "select[id^=\"additional_field_\"]",
+          "pairs": [
+            ["マイナンバーカード（通知カードは不可）", "持参しない"],
+            ["マイナンバーカード（通知カードは不可）", "運転免許証（マイナ運転免許証は不可）"]
+          ],
           "delayMs": 180,
           "maxPasses": 3
         },
