@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "cloud-pass",
+  "name": "CLOUD PASS",
+  "version": "2026.08.28.1",
+  "match": {
+    "hosts": ["cloud-pass.jp"]
+  },
+  "behavior": {
+    "entry": {
+      "onFillAction": {
+        "clickText": ["申込画面に進む"]
+      }
+    },
+    "application": {
+      "dateSelection": "manual",
+      "quantity": "max",
+      "memberFields": {
+        "氏名": "fullName",
+        "住所（都道府県）": "prefecture",
+        "住所（市区町村）": "address1",
+        "住所（番地、建物名、部屋番号等※本人様確認書類と同じ表記でご入力ください）": "address2",
+        "電話番号": "phoneDigits"
+      },
+      "idDocumentFieldLabel": "当日お持ちいただく顔写真付きの本人確認書類をご登録ください。",
+      "consent": {
+        "positiveOptions": ["はい", "同意する"]
+      }
+    }
+  },
+  "safety": {
+    "neverClickTexts": ["申し込む", "この内容で申し込む", "購入する", "確定"],
+    "ignoreAutocompletePrefixes": ["cc-"]
+  }
+}
