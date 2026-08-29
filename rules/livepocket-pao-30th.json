@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "livepocket-pao-30th",
+  "name": "LivePocket PAO/竜星のPAO 30th",
+  "version": "2026.08.30.1",
+  "match": {
+    "hosts": ["livepocket.jp"],
+    "pathPrefixes": ["/purchase/confirm"],
+    "urlIncludes": ["id=1103842"]
+  },
+  "stages": [
+    {
+      "id": "purchase-confirm",
+      "paths": [{"prefix": "/purchase/confirm"}],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98588_01",
+          "profileKey": "__fullNameExact"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98589_01",
+          "profileKey": "__fullKana"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98590_01",
+          "profileKey": "__fullAddress"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98591_01",
+          "profileKey": "__birthDateCompact"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98592_01",
+          "profileKey": "phone",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question98593_01",
+          "profileKey": "email"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "同意する",
+          "selector": "input[name=\"questionnaire_answers\\[98594\\]\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "注意事項|同意",
+          "selector": "#order_form_purchase_agreement_content"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["チケットを申込む", "申し込む", "申込む", "購入する", "確定", "送信"]
+  }
+}
