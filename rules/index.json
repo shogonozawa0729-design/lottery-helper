@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.08.28.4",
+  "rulesVersion": "2026.08.30.1",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
     "productKeywords": []
@@ -9,6 +9,11 @@
     {
       "id": "cloud-pass",
       "file": "rules/cloud-pass.json",
+      "enabled": true
+    },
+    {
+      "id": "livepocket-pao-30th",
+      "file": "rules/livepocket-pao-30th.json",
       "enabled": true
     }
   ]
