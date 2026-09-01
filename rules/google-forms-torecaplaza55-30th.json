@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms トレカプラザ55",
-  "version": "2026.09.01.3",
+  "version": "2026.09.01.4",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -14,8 +14,8 @@
       "fillActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "返信に表示するメールアドレスとして.*を記録する|メールアドレスとして.*記録する",
-          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "div[role=\"checkbox\"][aria-label^=\"返信に表示するメールアドレスとして\"]"
         },
         {
           "type": "fillProfileByLabel",
