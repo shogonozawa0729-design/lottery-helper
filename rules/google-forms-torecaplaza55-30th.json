@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms トレカプラザ55",
-  "version": "2026.09.01.4",
+  "version": "2026.09.01.5",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -11,6 +11,7 @@
     {
       "id": "entry-form",
       "paths": [{"prefix": "/forms/d/e/"}],
+      "requiredText": ["トレカプラザ55通販店", "顧客ID"],
       "fillActions": [
         {
           "type": "checkByLabel",
