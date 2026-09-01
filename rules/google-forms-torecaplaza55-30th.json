@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
-  "name": "Google Forms トレカプラザ55 30th",
-  "version": "2026.09.01.1",
+  "name": "Google Forms トレカプラザ55",
+  "version": "2026.09.01.2",
   "match": {
     "hosts": ["docs.google.com"],
-    "pathPrefixes": ["/forms/d/e/1FAIpQLSf5-j-fCgi5uKbpASwrukL_fx0jgwefIRMhaqDalSYBQ1hoCA/viewform"]
+    "pathPrefixes": ["/forms/d/e/"]
   },
   "stages": [
     {
       "id": "entry-form",
-      "paths": [{"prefix": "/forms/d/e/1FAIpQLSf5-j-fCgi5uKbpASwrukL_fx0jgwefIRMhaqDalSYBQ1hoCA/viewform"}],
+      "paths": [{"prefix": "/forms/d/e/"}],
       "fillActions": [
         {
           "type": "fillProfileByLabel",
@@ -27,18 +27,13 @@
         {
           "type": "fillProfileByLabel",
           "labelRegex": "^メールアドレス.*",
-          "selector": "textarea",
+          "selector": "textarea,input[type=\"email\"]",
           "profileKey": "email"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "30th CELEBRATION.*1BOX",
-          "selector": "div[role=\"checkbox\"]"
-        },
-        {
-          "type": "checkByLabel",
-          "labelRegex": "30th CELEBRATION.*プレミアムデッキセット.*エーフィ.*ブラッキー",
-          "selector": "div[role=\"checkbox\"]"
+          "labelRegex": "(?:¥|￥|\\d[\\d,]*円|BOX|パック|デッキ|セット)",
+          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
         }
       ],
       "agreeActions": []
