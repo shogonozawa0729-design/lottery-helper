@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms トレカプラザ55",
-  "version": "2026.09.01.2",
+  "version": "2026.09.01.3",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -12,6 +12,11 @@
       "id": "entry-form",
       "paths": [{"prefix": "/forms/d/e/"}],
       "fillActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "返信に表示するメールアドレスとして.*を記録する|メールアドレスとして.*記録する",
+          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
+        },
         {
           "type": "fillProfileByLabel",
           "labelRegex": "トレカプラザ55通販店\\s*顧客ID.*",
