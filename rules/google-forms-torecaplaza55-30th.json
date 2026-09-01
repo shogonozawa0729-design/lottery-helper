@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-torecaplaza55-30th",
+  "name": "Google Forms トレカプラザ55 30th",
+  "version": "2026.09.01.1",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": ["/forms/d/e/1FAIpQLSf5-j-fCgi5uKbpASwrukL_fx0jgwefIRMhaqDalSYBQ1hoCA/viewform"]
+  },
+  "stages": [
+    {
+      "id": "entry-form",
+      "paths": [{"prefix": "/forms/d/e/1FAIpQLSf5-j-fCgi5uKbpASwrukL_fx0jgwefIRMhaqDalSYBQ1hoCA/viewform"}],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "トレカプラザ55通販店\\s*顧客ID.*",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "trecaPlaza55Id"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^お名前.*",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "__fullNameExact"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^メールアドレス.*",
+          "selector": "textarea",
+          "profileKey": "email"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "30th CELEBRATION.*1BOX",
+          "selector": "div[role=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "30th CELEBRATION.*プレミアムデッキセット.*エーフィ.*ブラッキー",
+          "selector": "div[role=\"checkbox\"]"
+        }
+      ],
+      "agreeActions": []
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む"]
+  }
+}
