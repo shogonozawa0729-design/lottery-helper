@@ -1,12 +1,11 @@
 {
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
-  "name": "LivePocket PAO/竜星のPAO 30th",
-  "version": "2026.08.30.1",
+  "name": "LivePocket 共通応募者情報",
+  "version": "2026.09.01.2",
   "match": {
     "hosts": ["livepocket.jp"],
-    "pathPrefixes": ["/purchase/confirm"],
-    "urlIncludes": ["id=1103842"]
+    "pathPrefixes": ["/purchase/confirm"]
   },
   "stages": [
     {
@@ -15,52 +14,52 @@
       "fillActions": [
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98588_01",
+          "labelRegex": "氏名|お名前|名前(?!.*カナ)|姓名",
+          "selector": "input[type=\"text\"],textarea",
           "profileKey": "__fullNameExact"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98589_01",
+          "labelRegex": "フリガナ|ふりがな|氏名.*カナ|名前.*カナ|カナ",
+          "selector": "input[type=\"text\"],textarea",
           "profileKey": "__fullKana"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98590_01",
+          "labelRegex": "住所|お住まい|所在地",
+          "selector": "input[type=\"text\"],textarea",
           "profileKey": "__fullAddress"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98591_01",
+          "labelRegex": "生年月日|誕生日",
+          "selector": "input[type=\"text\"],input[type=\"date\"],textarea",
           "profileKey": "__birthDateCompact"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98592_01",
+          "labelRegex": "電話番号|携帯番号|TEL|Tel|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
           "profileKey": "phone",
           "transform": "digits"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question98593_01",
+          "labelRegex": "メールアドレス|メール|E.?mail|e.?mail",
+          "selector": "input[type=\"text\"],input[type=\"email\"],textarea",
           "profileKey": "email"
         }
       ],
       "agreeActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "同意する",
-          "selector": "input[name=\"questionnaire_answers\\[98594\\]\"]"
+          "labelRegex": "同意する|同意します|了承する|承諾する",
+          "selector": "input[type=\"checkbox\"],input[type=\"radio\"]"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "注意事項|同意",
-          "selector": "#order_form_purchase_agreement_content"
+          "labelRegex": "注意事項|利用規約|規約.*同意|同意",
+          "selector": "input[type=\"checkbox\"]"
         }
       ]
     }
