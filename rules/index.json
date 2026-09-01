@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.01.5",
+  "rulesVersion": "2026.09.01.6",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
     "productKeywords": []
