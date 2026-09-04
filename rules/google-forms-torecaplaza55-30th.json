@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms 共通応募フォーム",
-  "version": "2026.09.05.20",
+  "version": "2026.09.05.21",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -208,6 +208,11 @@
         }
       ],
       "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": ".*",
+          "selector": "div[role=\"checkbox\"][aria-label*=\"ご同意いただければチェックを押してください\"]"
+        },
         {
           "type": "checkByLabel",
           "labelRegex": "ご同意いただければ.*チェック|同意.*チェックを押してください|お会計はご本人様のみ|代理での受け取り.*お断り",
