@@ -2,16 +2,121 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms 共通応募フォーム",
-  "version": "2026.09.05.21",
+  "version": "2026.09.05.22",
   "match": {
-    "hosts": ["docs.google.com"],
-    "pathPrefixes": ["/forms/d/e/"]
+    "hosts": [
+      "docs.google.com"
+    ],
+    "pathPrefixes": [
+      "/forms/d/e/"
+    ]
   },
   "stages": [
     {
+      "id": "batoloco-kashiwa-page1",
+      "paths": [
+        {
+          "prefix": "/forms/d/e/1FAIpQLSdgrg6RC2nr0UwcH_eW40cSePKI5t8N4aGDbghYi1G3MFdHVA/"
+        }
+      ],
+      "requiredText": [
+        "トーナメントセンターバトロコ",
+        "ご本人様確認",
+        "Googleの口コミ"
+      ],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "トーナメントセンターバトロコ.*ポイントカード.*会員番号",
+          "selector": "textarea,input[type=\"text\"]",
+          "profileKey": "batorocoNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号.*ハイフンなし|電話番号",
+          "selector": "input[type=\"text\"],input[type=\"tel\"]",
+          "profileKey": "phone",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ご本人様確認.*お名前.*フルネーム|本人.*確認.*名前",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        }
+      ],
+      "agreeActions": []
+    },
+    {
+      "id": "batoloco-kashiwa-page2plus",
+      "paths": [
+        {
+          "prefix": "/forms/d/e/1FAIpQLSdgrg6RC2nr0UwcH_eW40cSePKI5t8N4aGDbghYi1G3MFdHVA/"
+        }
+      ],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "バトロコ.*ポイントカード.*会員番号|会員番号.*バトロコ",
+          "selector": "textarea,input[type=\"text\"],input[type=\"number\"]",
+          "profileKey": "batorocoNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|携帯番号|TEL|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
+          "profileKey": "phone",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^(?!.*口コミ).*?(?:ご本人様確認.*お名前|本人.*確認.*名前|氏名|本名|フルネーム).*",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "X\\(旧Twitter\\).*ID|Twitter.*ID|X.*ID",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "twitter",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "input[type=\"date\"]",
+          "profileKey": "__birthDate"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*30th.*CELEBRATION|30th.*CELEBRATION.*ポケモンカードゲーム",
+          "selector": "div[role=\"radio\"],div[role=\"checkbox\"],input[type=\"radio\"],input[type=\"checkbox\"]"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "同意|了承|承諾|確認しました|注意事項|規約|代理.*受け取り|本人様のみ",
+          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
+        }
+      ]
+    },
+    {
       "id": "batoloco-30th-entry-form",
-      "paths": [{"prefix": "/forms/d/e/"}],
-      "requiredText": ["バトロコのポイントカード", "X(旧Twitter)", "本名の入力"],
+      "paths": [
+        {
+          "prefix": "/forms/d/e/"
+        }
+      ],
+      "requiredText": [
+        "バトロコのポイントカード",
+        "X(旧Twitter)",
+        "本名の入力"
+      ],
       "fillActions": [
         {
           "type": "checkByLabel",
@@ -75,8 +180,16 @@
     },
     {
       "id": "shop193-entry-form",
-      "paths": [{"prefix": "/forms/d/e/"}],
-      "requiredText": ["会員番号", "秋葉原店", "日本橋店"],
+      "paths": [
+        {
+          "prefix": "/forms/d/e/"
+        }
+      ],
+      "requiredText": [
+        "会員番号",
+        "秋葉原店",
+        "日本橋店"
+      ],
       "fillActions": [
         {
           "type": "checkByLabel",
@@ -114,8 +227,15 @@
     },
     {
       "id": "torecaplaza55-entry-form",
-      "paths": [{"prefix": "/forms/d/e/"}],
-      "requiredText": ["トレカプラザ55通販店", "顧客ID"],
+      "paths": [
+        {
+          "prefix": "/forms/d/e/"
+        }
+      ],
+      "requiredText": [
+        "トレカプラザ55通販店",
+        "顧客ID"
+      ],
       "fillActions": [
         {
           "type": "checkByLabel",
@@ -150,7 +270,11 @@
     },
     {
       "id": "google-forms-common-profile",
-      "paths": [{"prefix": "/forms/d/e/"}],
+      "paths": [
+        {
+          "prefix": "/forms/d/e/"
+        }
+      ],
       "fillActions": [
         {
           "type": "checkByLabel",
@@ -222,6 +346,12 @@
     }
   ],
   "safety": {
-    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む"]
+    "neverClickTexts": [
+      "送信",
+      "フォームをクリア",
+      "購入する",
+      "確定",
+      "申し込む"
+    ]
   }
 }
