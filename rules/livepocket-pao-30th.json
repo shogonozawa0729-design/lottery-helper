@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.5",
+  "version": "2026.09.04.6",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -26,6 +26,35 @@
           "type": "checkByLabel",
           "labelRegex": "上記注意事項に同意しチケットの購入・申込をする|注意事項.*同意|同意",
           "selector": "#order_form_purchase_agreement_content,input[type=\"checkbox\"]",
+          "delayMs": 120
+        }
+      ]
+    },
+    {
+      "id": "bigmagic-ikebukuro-players",
+      "paths": [{"prefix": "/purchase/confirm"}],
+      "requiredText": ["BIGMAGIC", "池袋店"],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question176975_01",
+          "profileKey": "playersId",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "#question176976_01",
+          "profileKey": "playersName",
+          "transform": "trim"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "上記注意事項に同意しチケットの購入・申込をする|注意事項.*同意|同意",
+          "selector": "#order_form_purchase_agreement_content",
           "delayMs": 120
         }
       ]
