@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.25",
+  "rulesVersion": "2026.09.05.26",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
@@ -20,6 +20,11 @@
     {
       "id": "google-forms-batoloco-honatsugi",
       "file": "rules/google-forms-batoloco-honatsugi.json",
+      "enabled": true
+    },
+    {
+      "id": "google-forms-batoloco-takadanobaba",
+      "file": "rules/google-forms-batoloco-takadanobaba.json",
       "enabled": true
     },
     {
