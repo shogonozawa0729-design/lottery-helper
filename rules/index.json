@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.04.12",
+  "rulesVersion": "2026.09.04.13",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
@@ -20,6 +20,11 @@
     {
       "id": "google-forms-torecaplaza55-30th",
       "file": "rules/google-forms-torecaplaza55-30th.json",
+      "enabled": true
+    },
+    {
+      "id": "furu1",
+      "file": "rules/furu1.json",
       "enabled": true
     }
   ]
