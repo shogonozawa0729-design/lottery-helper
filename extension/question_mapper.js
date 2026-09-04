@@ -2,38 +2,22 @@
   if (globalThis.__lotteryHelperQuestionMapperLoaded) return;
   globalThis.__lotteryHelperQuestionMapperLoaded = true;
 
-  function cleanText(value, max = 1800) {
+  function cleanText(value, max = 2400) {
     return String(value || '')
       .normalize('NFKC')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, max);
-  }
-
-  function getLabelText(el) {
-    if (!el) return '';
-    const parts = [];
-    if (el.labels) {
-      for (const label of el.labels) parts.push(label.innerText || label.textContent || '');
-    }
-    const closest = el.closest?.('label');
-    if (closest) parts.push(closest.innerText || closest.textContent || '');
-    const aria = el.getAttribute?.('aria-label');
-    if (aria) parts.push(aria);
-    return cleanText(parts.join(' '), 600);
+      .slice(-max);
   }
 
   function setNativeValue(el, value) {
     if (!el || value == null || value === '' || el.disabled || el.readOnly) return false;
     const target = String(value);
-    const old = String(el.value ?? '');
-    if (old === target) return false;
-
+    if (String(el.value ?? '') === target) return false;
     const proto = Object.getPrototypeOf(el);
     const desc = proto && Object.getOwnPropertyDescriptor(proto, 'value');
     if (desc?.set) desc.set.call(el, target);
     else el.value = target;
-
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     return true;
@@ -47,84 +31,89 @@
   }
 
   function compileMappings(rule) {
-    const raw = Array.isArray(rule?.questionMappings) ? rule.questionMappings : [];
-    return raw.map((item, index) => {
-      try {
-        return {
-          ...item,
-          index,
-          regex: new RegExp(item.questionRegex || '', 'iu')
-        };
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
+    return (Array.isArray(rule?.questionMappings) ? rule.questionMappings : [])
+      .map((item, index) => {
+        try {
+          return { ...item, index, regex: new RegExp(item.questionRegex || '', 'iu') };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
   }
 
   function isTextLikeControl(el) {
     if (!el || el.disabled || el.readOnly) return false;
-    if (el.tagName === 'TEXTAREA') return true;
-    if (el.tagName === 'SELECT') return true;
+    if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
     if (el.tagName !== 'INPUT') return false;
-    const type = String(el.type || 'text').toLowerCase();
-    return ['text', 'number', 'tel', 'email', 'search', 'url'].includes(type);
+    return ['text', 'number', 'tel', 'email', 'search', 'url'].includes(String(el.type || 'text').toLowerCase());
   }
 
-  function siblingTextBefore(node, limit = 900) {
-    if (!node) return '';
-    const parts = [];
-    let current = node.previousElementSibling;
-    let count = 0;
-    while (current && count < 4) {
-      const text = cleanText(current.innerText || current.textContent || '', 500);
-      if (text) parts.unshift(text);
-      if (parts.join(' ').length >= limit) break;
-      current = current.previousElementSibling;
-      count++;
-    }
-    return cleanText(parts.join(' '), limit);
-  }
-
-  function questionContexts(el) {
-    const contexts = [];
-    const push = value => {
-      const text = cleanText(value, 1600);
-      if (!text) return;
-      if (!contexts.includes(text)) contexts.push(text);
-    };
-
-    push([
-      getLabelText(el),
+  function directContext(el) {
+    const labels = el.labels ? [...el.labels].map(label => label.innerText || label.textContent || '') : [];
+    return cleanText([
+      ...labels,
+      el.closest?.('label')?.innerText,
       el.getAttribute?.('aria-label'),
       el.getAttribute?.('placeholder'),
       el.getAttribute?.('name'),
       el.id
-    ].filter(Boolean).join(' '));
+    ].filter(Boolean).join(' '), 1000);
+  }
 
-    push(siblingTextBefore(el));
-    push(siblingTextBefore(el.parentElement));
-
-    let node = el.parentElement;
-    let depth = 0;
-    while (node && node !== document.body && depth < 8) {
-      const text = cleanText(node.innerText || node.textContent || '', 1600);
-      if (text && text.length <= 1600) push(text);
-      push(siblingTextBefore(node));
-      node = node.parentElement;
-      depth++;
+  function renderedTextBefore(el, limit = 2200) {
+    try {
+      const range = document.createRange();
+      range.setStart(document.body, 0);
+      range.setEndBefore(el);
+      return cleanText(range.toString(), limit);
+    } catch {
+      return '';
     }
+  }
 
-    return contexts;
+  function lastMatchIndex(text, regex) {
+    if (!text) return -1;
+    try {
+      const flags = regex.flags.includes('g') ? regex.flags : regex.flags + 'g';
+      const scan = new RegExp(regex.source, flags);
+      let last = -1;
+      let match;
+      while ((match = scan.exec(text)) !== null) {
+        last = match.index;
+        if (match[0] === '') scan.lastIndex++;
+      }
+      return last;
+    } catch {
+      return -1;
+    }
   }
 
   function mappingForControl(el, mappings) {
-    for (const context of questionContexts(el)) {
-      const matches = mappings.filter(mapping => {
+    const direct = directContext(el);
+    if (direct) {
+      const directHits = mappings.filter(mapping => {
         mapping.regex.lastIndex = 0;
-        return mapping.regex.test(context);
+        return mapping.regex.test(direct);
       });
-      if (matches.length === 1) return { mapping: matches[0], context };
+      if (directHits.length === 1) return directHits[0];
     }
+
+    // LivePocket等は設問文とtextareaにHTML labelが結び付いていない。
+    // そこで「この入力欄より前に表示されている本文」のうち、最も直近に現れた設問辞書を採用する。
+    const before = renderedTextBefore(el);
+    let best = null;
+    let bestIndex = -1;
+    for (const mapping of mappings) {
+      const index = lastMatchIndex(before, mapping.regex);
+      if (index > bestIndex) {
+        best = mapping;
+        bestIndex = index;
+      }
+    }
+
+    // 遠すぎる文言を誤採用しない。設問は通常入力欄の直前にある。
+    if (best && bestIndex >= Math.max(0, before.length - 900)) return best;
     return null;
   }
 
@@ -153,12 +142,9 @@
     )].filter(isTextLikeControl);
 
     for (const el of controls) {
-      const found = mappingForControl(el, mappings);
-      if (!found) continue;
-
-      const key = found.mapping.profileKey || '';
-      if (!key) continue;
-      const value = transformValue(profile[key], found.mapping.transform);
+      const mapping = mappingForControl(el, mappings);
+      if (!mapping?.profileKey) continue;
+      const value = transformValue(profile[mapping.profileKey], mapping.transform);
       if (!value) continue;
 
       const didChange = el.tagName === 'SELECT'
@@ -167,16 +153,14 @@
 
       if (didChange) {
         changed++;
-        el.dataset.lotteryHelperQuestionMapped = key;
+        el.dataset.lotteryHelperQuestionMapped = mapping.profileKey;
       }
     }
-
     return changed;
   }
 
   chrome.runtime.onMessage.addListener((msg) => {
-    if (msg?.type !== 'FILL_FORM') return;
-    if (!msg?.rule || !msg?.profile) return;
+    if (msg?.type !== 'FILL_FORM' || !msg?.rule || !msg?.profile) return;
     try {
       fillByQuestionMappings(msg.rule, msg.profile);
     } catch (error) {
