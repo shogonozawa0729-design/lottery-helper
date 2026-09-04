@@ -2,23 +2,38 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.2",
+  "version": "2026.09.04.3",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
   },
   "stages": [
     {
-      "id": "purchase-confirm",
+      "id": "hareruya2-line-code",
       "paths": [{"prefix": "/purchase/confirm"}],
+      "requiredText": ["晴れる屋2", "LINE会員コード"],
       "fillActions": [
         {
           "type": "fillProfileByLabel",
-          "labelRegex": "晴れる屋2のLINE会員コード|LINE.?会員コード|LINE.?会員ID|LINE.?ID|LINE.*会員.*番号|晴れる屋2.*LINE",
+          "labelRegex": ".*",
           "selector": "textarea[name^=\"questionnaire_answers\"],input[type=\"text\"][name^=\"questionnaire_answers\"]",
           "profileKey": "hareruyaNumber",
           "transform": "trim"
-        },
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "上記注意事項に同意しチケットの購入・申込をする|注意事項.*同意|同意",
+          "selector": "#order_form_purchase_agreement_content,input[type=\"checkbox\"]",
+          "delayMs": 120
+        }
+      ]
+    },
+    {
+      "id": "purchase-confirm",
+      "paths": [{"prefix": "/purchase/confirm"}],
+      "fillActions": [
         {
           "type": "fillProfileByLabel",
           "labelRegex": "氏名|お名前|名前(?!.*カナ)|姓名",
