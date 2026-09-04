@@ -2,20 +2,35 @@
   "schemaVersion": 2,
   "id": "furu1",
   "name": "ふるいち 共通抽選フォーム",
-  "version": "2026.09.04.16",
+  "version": "2026.09.04.17",
   "match": {
-    "hosts": ["www.furu1.net", "furu1.net"],
-    "pathPrefixes": ["/news/news_information/"]
+    "hosts": [
+      "www.furu1.net",
+      "furu1.net"
+    ],
+    "pathPrefixes": [
+      "/news/news_information/"
+    ]
   },
   "stages": [
     {
       "id": "lottery-entry",
-      "paths": [{"prefix": "/news/news_information/"}],
+      "paths": [
+        {
+          "prefix": "/news/news_information/"
+        }
+      ],
       "fillActions": [
         {
           "type": "selectTextByLabel",
           "labelRegex": ".*",
           "selector": "#pbFormInput1",
+          "text": "マイナンバーカード"
+        },
+        {
+          "type": "selectTextByLabel",
+          "labelRegex": "本人確認書|写真付き本人確認|ご予約時.*ご購入時.*提示",
+          "selector": "select",
           "text": "マイナンバーカード"
         },
         {
@@ -25,8 +40,18 @@
         },
         {
           "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*プレミアムデッキセット.*エーフィ.*ブラッキー",
+          "selector": "input[type=\"checkbox\"], [role=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
           "labelRegex": ".*",
           "selector": "#choice_id_103546"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*拡張パック.*CELEBRATION.*BOX",
+          "selector": "input[type=\"checkbox\"], [role=\"checkbox\"]"
         },
         {
           "type": "fillProfileByLabel",
@@ -102,18 +127,41 @@
         },
         {
           "type": "checkByLabel",
+          "labelRegex": "はじめにお読みください.*注意事項.*プライバシーポリシー.*同意.*申し込む",
+          "selector": "input[type=\"checkbox\"], [role=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
           "labelRegex": ".*",
           "selector": "#choice_id_103547"
         },
         {
           "type": "checkByLabel",
+          "labelRegex": "承諾の上.*抽選に応募する",
+          "selector": "input[type=\"checkbox\"], [role=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
           "labelRegex": ".*",
           "selector": "#choice_id_103548"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "抽選要件.*注意事項.*プライバシーポリシー.*承諾.*応募する",
+          "selector": "input[type=\"checkbox\"], [role=\"checkbox\"]"
         }
       ]
     }
   ],
   "safety": {
-    "neverClickTexts": ["入力内容を確認する", "申し込む", "申込む", "応募する", "送信", "確定", "購入する"]
+    "neverClickTexts": [
+      "入力内容を確認する",
+      "申し込む",
+      "申込む",
+      "応募する",
+      "送信",
+      "確定",
+      "購入する"
+    ]
   }
 }
