@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.4",
+  "version": "2026.09.04.5",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -36,7 +36,21 @@
       "fillActions": [
         {
           "type": "fillProfileByLabel",
-          "labelRegex": "氏名|お名前|名前(?!.*カナ)|姓名",
+          "labelRegex": "プレイヤーズクラブ.*ID|プレイヤーズ.*ID|プレイヤーズID.*番号|プレイヤーズ.*番号|Players.?Club.*ID|Players?.?ID|Player.?ID",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "playersId",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズ.*(なまえ|名前|ネーム|ニックネーム)|プレイヤーズクラブ.*(なまえ|名前|ネーム|ニックネーム)|プレイヤーネーム|ニックネーム|Players?.*(Name|Nickname)|Player.?Name",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "playersName",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "氏名|お名前|姓名|^名前$|^名前（.*）$",
           "selector": "input[type=\"text\"],textarea",
           "profileKey": "__fullNameExact"
         },
