@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "version": "2026.09.04.1",
+  "fields": [
+    {
+      "key": "cardboxNumber",
+      "label": "カードボックスの番号",
+      "type": "text",
+      "inputMode": "numeric",
+      "autocomplete": "off",
+      "aliases": [
+        "カードボックス会員番号",
+        "CARD BOX会員番号",
+        "CARDBOX会員番号",
+        "カードボックス会員ID",
+        "CARD BOX ID"
+      ]
+    }
+  ]
+}
