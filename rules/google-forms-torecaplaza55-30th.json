@@ -2,12 +2,74 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms 共通応募フォーム",
-  "version": "2026.09.04.8",
+  "version": "2026.09.04.11",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
   },
   "stages": [
+    {
+      "id": "pokemon-players-common",
+      "paths": [{"prefix": "/forms/d/e/"}],
+      "requiredText": ["プレイヤーズクラブ", "プレイヤーズネーム"],
+      "fillActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "返信に表示するメールアドレスとして.*記録する",
+          "selector": "div[role=\"checkbox\"]"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "当選通知.*メールアドレス|通知用.*メールアドレス|^メールアドレス.*",
+          "selector": "input[type=\"email\"],input[type=\"text\"],textarea",
+          "profileKey": "email",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "お名前.*漢字|氏名.*漢字|^氏名(?:\\s|（|\\(|\\*)|姓名",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "お名前.*カタカナ|お名前.*カナ|フリガナ|ふりがな|氏名.*カナ|名前.*カナ",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullKana",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "住所|お住まい|所在地",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullAddress",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|携帯番号|TEL|Tel|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
+          "profileKey": "phone",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ポケモンカードゲーム.*プレイヤーズクラブ.*ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "playersId",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズクラブ.*プレイヤーズネーム|プレイヤーズネーム|プレイヤー.?ネーム|ニックネーム",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "playersName",
+          "transform": "trim"
+        }
+      ],
+      "agreeActions": []
+    },
     {
       "id": "shop193-entry-form",
       "paths": [{"prefix": "/forms/d/e/"}],
