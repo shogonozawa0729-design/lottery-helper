@@ -2,14 +2,31 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.6",
+  "version": "2026.09.04.7",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
   },
+  "questionMappings": [
+    {
+      "questionRegex": "本人認証済み.*プレイヤー.?ID|ポケモンカードゲーム.*プレイヤー.?ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID|Players?.?ID|Player.?ID",
+      "profileKey": "playersId",
+      "transform": "digits"
+    },
+    {
+      "questionRegex": "プレイヤーズクラブ.*ニックネーム|ポケモンカードゲーム.*ニックネーム|プレイヤーズ?.*(ニックネーム|プレイヤーネーム|名前|なまえ|ネーム)|ニックネーム|プレイヤー.?ネーム|Players?.*(Nickname|Name)|Player.?Name",
+      "profileKey": "playersName",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "晴れる屋2?.*LINE.*会員コード|LINE.*会員コード",
+      "profileKey": "hareruyaNumber",
+      "transform": "trim"
+    }
+  ],
   "stages": [
     {
-      "id": "hareruya2-line-code",
+      "id": "hareruya2-line-code-legacy",
       "paths": [{"prefix": "/purchase/confirm"}],
       "requiredText": ["晴れる屋2"],
       "fillActions": [
@@ -31,52 +48,9 @@
       ]
     },
     {
-      "id": "bigmagic-ikebukuro-players",
-      "paths": [{"prefix": "/purchase/confirm"}],
-      "requiredText": ["BIGMAGIC", "池袋店"],
-      "fillActions": [
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question176975_01",
-          "profileKey": "playersId",
-          "transform": "trim"
-        },
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "#question176976_01",
-          "profileKey": "playersName",
-          "transform": "trim"
-        }
-      ],
-      "agreeActions": [
-        {
-          "type": "checkByLabel",
-          "labelRegex": "上記注意事項に同意しチケットの購入・申込をする|注意事項.*同意|同意",
-          "selector": "#order_form_purchase_agreement_content",
-          "delayMs": 120
-        }
-      ]
-    },
-    {
       "id": "purchase-confirm",
       "paths": [{"prefix": "/purchase/confirm"}],
       "fillActions": [
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": "プレイヤーズクラブ.*ID|プレイヤーズ.*ID|プレイヤーズID.*番号|プレイヤーズ.*番号|Players.?Club.*ID|Players?.?ID|Player.?ID",
-          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
-          "profileKey": "playersId",
-          "transform": "trim"
-        },
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": "プレイヤーズ.*(なまえ|名前|ネーム|ニックネーム)|プレイヤーズクラブ.*(なまえ|名前|ネーム|ニックネーム)|プレイヤーネーム|ニックネーム|Players?.*(Name|Nickname)|Player.?Name",
-          "selector": "input[type=\"text\"],textarea",
-          "profileKey": "playersName",
-          "transform": "trim"
-        },
         {
           "type": "fillProfileByLabel",
           "labelRegex": "氏名|お名前|姓名|^名前$|^名前（.*）$",
@@ -136,6 +110,7 @@
     }
   ],
   "safety": {
-    "neverClickTexts": ["チケットを申込む", "申し込む", "申込む", "購入する", "確定", "送信"]
+    "neverClickTexts": ["チケットを申込む", "申し込む", "申込む", "購入する", "確定", "送信"],
+    "manualQuestionRegex": ["本人認証済みか|本人認証|マイページで.*認証"]
   }
 }
