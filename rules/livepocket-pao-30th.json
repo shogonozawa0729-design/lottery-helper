@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.7",
+  "version": "2026.09.04.9",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -21,6 +21,11 @@
     {
       "questionRegex": "晴れる屋2?.*LINE.*会員コード|LINE.*会員コード",
       "profileKey": "hareruyaNumber",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "カードボックス.*(会員番号|会員ID|番号|ID)|CARD\\s*BOX.*(会員番号|会員ID|番号|ID)|CARDBOX.*(会員番号|会員ID|番号|ID)",
+      "profileKey": "cardboxNumber",
       "transform": "trim"
     }
   ],
