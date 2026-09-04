@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.23",
+  "rulesVersion": "2026.09.05.24",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
@@ -15,6 +15,11 @@
     {
       "id": "livepocket-pao-30th",
       "file": "rules/livepocket-pao-30th.json",
+      "enabled": true
+    },
+    {
+      "id": "google-forms-batoloco-honatsugi",
+      "file": "rules/google-forms-batoloco-honatsugi.json",
       "enabled": true
     },
     {
