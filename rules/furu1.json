@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "id": "furu1",
+  "name": "ふるいち 共通抽選フォーム",
+  "version": "2026.09.04.13",
+  "match": {
+    "hosts": ["www.furu1.net", "furu1.net"],
+    "pathPrefixes": ["/news/news_information/"]
+  },
+  "stages": [
+    {
+      "id": "lottery-entry",
+      "paths": [{"prefix": "/news/news_information/"}],
+      "fillActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*30th.*プレミアムデッキセット.*エーフィ.*ブラッキー",
+          "selector": "input[type=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*拡張パック.*30th.*CELEBRATION.*1BOX",
+          "selector": "input[type=\"checkbox\"]"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ふるいち.*(?:アプリ)?カード番号|ふるいち.*会員.*番号|古本市場.*会員.*番号",
+          "selector": "#pbFormInput4,input[type=\"text\"]",
+          "profileKey": "furuichiNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "selectProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "select[name=\"form_values[5][0]\"]",
+          "profileKey": "__birthYear"
+        },
+        {
+          "type": "selectProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "select[name=\"form_values[5][1]\"]",
+          "profileKey": "__birthMonth"
+        },
+        {
+          "type": "selectProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "select[name=\"form_values[5][2]\"]",
+          "profileKey": "__birthDay"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^お名前$|氏名|名前",
+          "selector": "#pbFormInput6",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "フリガナ|ふりがな|カナ",
+          "selector": "#pbFormInput7",
+          "profileKey": "__fullKana",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "郵便番号",
+          "selector": "#pb_post_8",
+          "profileKey": "postalCode",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^住所$|住所",
+          "selector": "#pb_address_8",
+          "profileKey": "__fullAddress",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|お電話番号|TEL|tel",
+          "selector": "#pbFormInput10",
+          "profileKey": "phone",
+          "transform": "digits"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "はじめにお読みください.*同意.*申し込む|注意事項.*プライバシーポリシー.*同意",
+          "selector": "#choice_id_103365,input[type=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "承諾の上、抽選に応募する",
+          "selector": "#choice_id_103547,input[type=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "抽選要件.*注意事項.*プライバシーポリシー.*承諾.*応募する",
+          "selector": "#choice_id_103548,input[type=\"checkbox\"]"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["入力内容を確認する", "申し込む", "申込む", "応募する", "送信", "確定", "購入する"]
+  }
+}
