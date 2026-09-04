@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "furu1",
   "name": "ふるいち 共通抽選フォーム",
-  "version": "2026.09.04.15",
+  "version": "2026.09.04.16",
   "match": {
     "hosts": ["www.furu1.net", "furu1.net"],
     "pathPrefixes": ["/news/news_information/"]
@@ -14,19 +14,19 @@
       "fillActions": [
         {
           "type": "selectTextByLabel",
-          "labelRegex": "本人確認書|写真付き本人確認|ご予約時.*ご購入時.*提示",
+          "labelRegex": ".*",
           "selector": "#pbFormInput1",
           "text": "マイナンバーカード"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "ポケモンカードゲーム.*プレミアムデッキセット.*エーフィ.*ブラッキー",
-          "selector": "input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#choice_id_103545"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "ポケモンカードゲーム.*拡張パック.*CELEBRATION.*BOX",
-          "selector": "input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#choice_id_103546"
         },
         {
           "type": "fillProfileByLabel",
@@ -97,18 +97,18 @@
       "agreeActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "はじめにお読みください.*注意事項.*プライバシーポリシー.*同意.*申し込む",
-          "selector": "input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#choice_id_103365"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "承諾の上.*抽選に応募する",
-          "selector": "input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#choice_id_103547"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "抽選要件.*注意事項.*プライバシーポリシー.*承諾.*応募する",
-          "selector": "input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#choice_id_103548"
         }
       ]
     }
