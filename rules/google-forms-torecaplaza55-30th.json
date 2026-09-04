@@ -2,12 +2,77 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms 共通応募フォーム",
-  "version": "2026.09.04.12",
+  "version": "2026.09.05.18",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
   },
   "stages": [
+    {
+      "id": "batoloco-30th-entry-form",
+      "paths": [{"prefix": "/forms/d/e/"}],
+      "requiredText": ["バトロコのポイントカード", "X(旧Twitter)", "本名の入力"],
+      "fillActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "ポケモンカードゲーム.*MEGA.*拡張パック.*30th.*CELEBRATION",
+          "selector": "div[role=\"radio\"]"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "バトロコ.*ポイントカード.*13桁.*会員番号",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "batorocoNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "バトロコ.*ポイントカード登録時の名前",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "X\\(旧Twitter\\).*ID|Twitter.*ID",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "twitter",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "本名の入力|本名.*漢字|本名.*カタカナ",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "input[type=\"date\"]",
+          "profileKey": "__birthDate"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|お電話番号|携帯番号|TEL|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"]",
+          "profileKey": "phone",
+          "transform": "digits"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "^確認しました。?$",
+          "selector": "div[role=\"checkbox\"]"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": "確認.*了承しました.*入力に間違いはありません",
+          "selector": "div[role=\"checkbox\"]"
+        }
+      ]
+    },
     {
       "id": "shop193-entry-form",
       "paths": [{"prefix": "/forms/d/e/"}],
