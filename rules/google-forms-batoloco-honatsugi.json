@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-batoloco-honatsugi",
   "name": "バトロコ本厚木駅前 Google Forms",
-  "version": "2026.09.05.24",
+  "version": "2026.09.05.25",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/1FAIpQLSdyB_5843GZfNXBkQZSg9407nN6Gin_yr9hhEL4TjK9iJQerw/"]
@@ -22,61 +22,48 @@
       ]
     },
     {
-      "id": "honatsugi-page2plus",
+      "id": "honatsugi-final-page",
       "paths": [{"prefix": "/forms/d/e/1FAIpQLSdyB_5843GZfNXBkQZSg9407nN6Gin_yr9hhEL4TjK9iJQerw/"}],
+      "requiredText": [
+        "ポイントカード発行・登録時のお名前",
+        "メールアドレスを入力してください",
+        "確認しました。間違いありません"
+      ],
       "fillActions": [
         {
           "type": "fillProfileByLabel",
-          "labelRegex": "^メールアドレス.*|メールアドレス|email",
-          "selector": "input[type=\"email\"],input[type=\"text\"],textarea",
-          "profileKey": "email",
-          "transform": "trim"
-        },
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": "バトロコ.*ポイントカード.*会員番号|会員番号.*バトロコ",
+          "labelRegex": "バトロコ.*ポイントカード.*会員番号.*13桁|ポイントカード.*会員番号.*13桁",
           "selector": "textarea,input[type=\"text\"],input[type=\"number\"]",
           "profileKey": "batorocoNumber",
           "transform": "digits"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": "電話番号|携帯番号|TEL|tel",
-          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
-          "profileKey": "phone",
-          "transform": "digits"
-        },
-        {
-          "type": "fillProfileByLabel",
-          "labelRegex": "お名前|氏名|本名|フルネーム|本人.*確認.*名前",
-          "selector": "input[type=\"text\"],textarea",
+          "labelRegex": "ポイントカード発行・登録時のお名前|ポイントカード.*登録時.*名前",
+          "selector": "textarea,input[type=\"text\"]",
           "profileKey": "__fullNameExact",
           "transform": "trim"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": "X\\(旧Twitter\\).*ID|Twitter.*ID|X.*ID",
-          "selector": "input[type=\"text\"],textarea",
-          "profileKey": "twitter",
-          "transform": "trim"
+          "labelRegex": "電話番号.*ハイフンなし|電話番号",
+          "selector": "textarea,input[type=\"text\"],input[type=\"tel\"]",
+          "profileKey": "phone",
+          "transform": "digits"
         },
         {
           "type": "fillProfileByLabel",
-          "labelRegex": ".*",
-          "selector": "input[type=\"date\"]",
-          "profileKey": "__birthDate"
-        },
-        {
-          "type": "checkByLabel",
-          "labelRegex": "ポケモンカードゲーム.*30th.*CELEBRATION|30th.*CELEBRATION.*ポケモンカードゲーム",
-          "selector": "div[role=\"radio\"],div[role=\"checkbox\"],input[type=\"radio\"],input[type=\"checkbox\"]"
+          "labelRegex": "メールアドレスを入力してください|メールアドレス",
+          "selector": "textarea,input[type=\"email\"],input[type=\"text\"]",
+          "profileKey": "email",
+          "transform": "trim"
         }
       ],
       "agreeActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "同意|了承|承諾|確認しました|確認・同意しました|注意事項|規約",
-          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#i27"
         }
       ]
     }
