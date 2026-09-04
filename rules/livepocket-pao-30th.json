@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.3",
+  "version": "2026.09.04.4",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -11,7 +11,7 @@
     {
       "id": "hareruya2-line-code",
       "paths": [{"prefix": "/purchase/confirm"}],
-      "requiredText": ["晴れる屋2", "LINE会員コード"],
+      "requiredText": ["晴れる屋2"],
       "fillActions": [
         {
           "type": "fillProfileByLabel",
