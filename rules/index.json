@@ -1,6 +1,7 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.04.9",
+  "rulesVersion": "2026.09.04.10",
+  "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": ["了承", "承諾"],
     "productKeywords": []
