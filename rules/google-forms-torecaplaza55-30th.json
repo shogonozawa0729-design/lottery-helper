@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-torecaplaza55-30th",
   "name": "Google Forms 共通応募フォーム",
-  "version": "2026.09.05.18",
+  "version": "2026.09.05.19",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -63,13 +63,13 @@
       "agreeActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "^確認しました。?$",
-          "selector": "div[role=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#i49"
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "確認.*了承しました.*入力に間違いはありません",
-          "selector": "div[role=\"checkbox\"]"
+          "labelRegex": ".*",
+          "selector": "#i58"
         }
       ]
     },
