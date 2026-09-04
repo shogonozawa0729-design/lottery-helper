@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-batoloco-takadanobaba",
+  "name": "バトロコ高田馬場 Google Forms",
+  "version": "2026.09.05.26",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": ["/forms/d/e/1FAIpQLSdT72ipvtG5SIOIs3pGFBYo1v8XBi6q2PSreo7x74lYU3MwXA/"]
+  },
+  "stages": [
+    {
+      "id": "takadanobaba-entry",
+      "paths": [{"prefix": "/forms/d/e/1FAIpQLSdT72ipvtG5SIOIs3pGFBYo1v8XBi6q2PSreo7x74lYU3MwXA/"}],
+      "fillActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": ".*",
+          "selector": "#i22"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "トーナメントセンターバトロコ.*ポイントカード.*会員番号|バトロコ.*ポイントカード.*会員番号",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "batorocoNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズクラブ.*ID|プレイヤー.*ID",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "playersId",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズクラブ.*ニックネーム|ニックネーム|プレイヤーズネーム|プレイヤー.*ネーム",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "playersName",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|携帯番号|TEL|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
+          "profileKey": "phone",
+          "transform": "digits"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": ".*",
+          "selector": "#i14"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": ".*",
+          "selector": "#i49"
+        },
+        {
+          "type": "checkByLabel",
+          "labelRegex": ".*",
+          "selector": "#i77"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む"]
+  }
+}
