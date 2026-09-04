@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.01.2",
+  "version": "2026.09.04.1",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -12,6 +12,13 @@
       "id": "purchase-confirm",
       "paths": [{"prefix": "/purchase/confirm"}],
       "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "LINE.?会員ID|LINE.?ID|LINE.*会員.*番号|晴れる屋2.*LINE",
+          "selector": "textarea[name^=\"questionnaire_answers\"],input[type=\"text\"][name^=\"questionnaire_answers\"]",
+          "profileKey": "hareruyaNumber",
+          "transform": "trim"
+        },
         {
           "type": "fillProfileByLabel",
           "labelRegex": "氏名|お名前|名前(?!.*カナ)|姓名",
@@ -51,6 +58,12 @@
         }
       ],
       "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "上記注意事項に同意しチケットの購入・申込をする",
+          "selector": "#order_form_purchase_agreement_content",
+          "delayMs": 120
+        },
         {
           "type": "checkByLabel",
           "labelRegex": "同意する|同意します|了承する|承諾する",
