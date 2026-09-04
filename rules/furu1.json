@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "furu1",
   "name": "ふるいち 共通抽選フォーム",
-  "version": "2026.09.04.13",
+  "version": "2026.09.04.14",
   "match": {
     "hosts": ["www.furu1.net", "furu1.net"],
     "pathPrefixes": ["/news/news_information/"]
@@ -69,10 +69,15 @@
           "transform": "digits"
         },
         {
+          "type": "clickText",
+          "text": "住所検索",
+          "stopAfterClick": false
+        },
+        {
           "type": "fillProfileByLabel",
-          "labelRegex": "^住所$|住所",
-          "selector": "#pb_address_8",
-          "profileKey": "__fullAddress",
+          "labelRegex": "それ以降の住所|番地|建物|マンション|部屋",
+          "selector": "#pbFormInput9",
+          "profileKey": "address2",
           "transform": "trim"
         },
         {
