@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.39",
+  "version": "2026.09.05.42",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -29,7 +29,7 @@
         {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],div[role=\"checkbox\"],input[type=\"radio\"],input[type=\"checkbox\"]"}
       ],
       "agreeActions": [
-        {"type":"checkByLabel","labelRegex":"注意事項.*(?:全て|すべて).*確認.*(?:はい)?|個人情報.*(?:取り扱い|取扱い).*同意.*(?:はい)?|確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|同意します|同意しました|了承します|承諾します|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],div[role=\"radio\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
+        {"type":"checkByLabel","labelRegex":"はい[、。,.\\s]*承諾します|はい[、。,.\\s]*同意します|承諾します|同意します|同意しました|了承します|確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|注意事項.*確認|個人情報.*同意|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],div[role=\"radio\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
       ]
     }
   ],
