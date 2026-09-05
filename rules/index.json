@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.42",
+  "rulesVersion": "2026.09.05.43",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [
@@ -39,11 +39,6 @@
     {
       "id": "google-forms-universal",
       "file": "rules/google-forms-universal.json",
-      "enabled": true
-    },
-    {
-      "id": "google-forms-consent-yes-context",
-      "file": "rules/google-forms-consent-yes-context.json",
       "enabled": true
     },
     {
