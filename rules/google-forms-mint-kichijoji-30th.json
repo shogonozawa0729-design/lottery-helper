@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-mint-kichijoji-30th",
+  "name": "MINT 吉祥寺 Google Forms",
+  "version": "2026.09.05.34",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": [
+      "/forms/d/e/1FAIpQLSfAT0QsrJmi3QWjj2vMr0c8ToIhGde-XKG-sUraD_-QhZ1UFg/"
+    ]
+  },
+  "stages": [
+    {
+      "id": "entry-form",
+      "paths": [
+        {
+          "prefix": "/forms/d/e/1FAIpQLSfAT0QsrJmi3QWjj2vMr0c8ToIhGde-XKG-sUraD_-QhZ1UFg/"
+        }
+      ],
+      "requiredText": [
+        "MINTメンバーズアプリ会員番号",
+        "ミント吉祥寺店"
+      ],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "^メールアドレス.*|メールアドレス",
+          "selector": "input[type=\"email\"],input[type=\"text\"]",
+          "profileKey": "email",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "お名前.*フルネーム|氏名.*フルネーム|^お名前.*",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "フリガナ|ふりがな|カタカナで入力|氏名.*カナ|お名前.*カナ",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "__fullKana",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ご住所|住所",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullAddress",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "生年月日|日付",
+          "selector": "input[type=\"date\"]",
+          "profileKey": "__birthDate"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ミント吉祥寺店.*X.*アカウント|X\\(旧Twitter\\).*アカウント|Twitter.*アカウント|X.*@から入力",
+          "selector": "input[type=\"text\"]",
+          "profileKey": "twitter",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "MINT.*メンバーズ.*会員番号|MINT.*会員番号|ミント.*会員番号",
+          "selector": "input[type=\"text\"],input[type=\"number\"]",
+          "profileKey": "mintNumber",
+          "transform": "trim"
+        }
+      ],
+      "agreeActions": []
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む"]
+  }
+}
