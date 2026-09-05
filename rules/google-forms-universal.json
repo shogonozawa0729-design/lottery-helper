@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-universal",
+  "name": "Google Forms 汎用意味判定",
+  "version": "2026.09.05.37",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": ["/forms/d/e/"]
+  },
+  "stages": [
+    {
+      "id": "universal-google-form",
+      "paths": [{"prefix": "/forms/d/e/"}],
+      "fillActions": [
+        {"type":"fillProfileByLabel","labelRegex":"^メールアドレス.*|メールアドレス|連絡先.*メール|当選通知.*メール|通知用.*メール","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"お名前.*フルネーム|氏名.*フルネーム|ご本人様確認.*お名前|本人確認.*お名前|^氏名.*|^お名前.*|本名|姓名","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"フリガナ|ふりがな|カタカナで入力|お名前.*カナ|氏名.*カナ|名前.*カナ","selector":"input[type=\"text\"],textarea","profileKey":"__fullKana","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"ご住所|住所|お住まい|所在地","selector":"input[type=\"text\"],textarea","profileKey":"__fullAddress","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"生年月日|誕生日|出生年月日|日付","selector":"input[type=\"date\"]","profileKey":"__birthDate"},
+        {"type":"fillProfileByLabel","labelRegex":"電話番号|携帯番号|お電話番号|TEL|Tel|tel","selector":"input[type=\"text\"],input[type=\"tel\"],textarea","profileKey":"phone","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"ポケモンカードゲーム.*プレイヤーズ.*ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"playersId","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"プレイヤーズネーム|プレイヤー.?ネーム|ニックネーム","selector":"input[type=\"text\"],textarea","profileKey":"playersName","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"X\\(旧Twitter\\).*アカウント|X\\(旧Twitter\\).*ID|Twitter.*アカウント|Twitter.*ID|X.*@から入力|X.*ID","selector":"input[type=\"text\"],textarea","profileKey":"twitter","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"バトロコ.*ポイントカード.*会員番号|ポイントカード.*会員番号.*13桁|バトロコ.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"batorocoNumber","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"MINT.*メンバーズ.*会員番号|MINT.*会員番号|ミント.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"mintNumber","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"CARD BOX.*会員番号|CARDBOX.*会員番号|カードボックス.*会員番号|カードボックス.*会員ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"cardboxNumber","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"193.*会員番号|会員番号.*193|ポイントカード.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"shop193Number","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"トレカプラザ55.*顧客ID|顧客ID.*トレカプラザ55","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"trecaPlaza55Id","transform":"trim"}
+      ],
+      "agreeActions": [
+        {"type":"checkByLabel","labelRegex":"確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|注意事項.*同意|同意します|同意しました|了承します|承諾します|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],input[type=\"checkbox\"]"}
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む", "応募する"]
+  }
+}
