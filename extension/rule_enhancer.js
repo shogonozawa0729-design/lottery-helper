@@ -56,15 +56,30 @@
     labels.push(
       el?.getAttribute?.('aria-label'),
       el?.closest?.('label')?.innerText,
-      el?.closest?.('fieldset, li, tr, [class*=field], [class*=form], form')?.innerText
+      el?.closest?.('fieldset, li, tr, [role="listitem"], [class*=field], [class*=form], form')?.innerText
     );
     return norm(labels.filter(Boolean).join(' ')).slice(0, 1200);
   }
 
-  function isHiddenChoice(el) {
-    if (!el) return false;
-    const type = String(el.getAttribute('type') || '').toLowerCase();
-    if (type !== 'checkbox' && type !== 'radio') return false;
+  function choiceKind(el) {
+    if (!el) return '';
+    const type = String(el.getAttribute?.('type') || '').toLowerCase();
+    if (type === 'checkbox' || type === 'radio') return `native-${type}`;
+
+    const role = String(el.getAttribute?.('role') || '').toLowerCase();
+    if (role === 'checkbox' || role === 'radio') return `aria-${role}`;
+    return '';
+  }
+
+  function isDisabledChoice(el) {
+    if (!el) return true;
+    if (el.disabled) return true;
+    return String(el.getAttribute?.('aria-disabled') || '').toLowerCase() === 'true';
+  }
+
+  function isHiddenNativeChoice(el) {
+    const kind = choiceKind(el);
+    if (!kind.startsWith('native-')) return false;
     const st = getComputedStyle(el);
     const rect = el.getBoundingClientRect();
     return st.display === 'none' || st.visibility === 'hidden' ||
@@ -72,9 +87,12 @@
   }
 
   function isChecked(el) {
-    const type = String(el?.getAttribute?.('type') || '').toLowerCase();
-    if (type === 'checkbox' || type === 'radio') return !!el.checked;
-    return String(el?.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
+    const kind = choiceKind(el);
+    if (kind.startsWith('native-')) return !!el.checked;
+    if (kind.startsWith('aria-')) {
+      return String(el.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
+    }
+    return false;
   }
 
   function linkedChoiceIsOn(el) {
@@ -108,8 +126,8 @@
     return false;
   }
 
-  function setCheckedTrue(el) {
-    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+  function setNativeCheckedTrue(el) {
+    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
 
     try {
       const proto = Object.getPrototypeOf(el);
@@ -125,37 +143,72 @@
     }
   }
 
-  async function turnOnHiddenChoice(el) {
-    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+  async function turnOnNativeChoice(el) {
+    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
 
-    // ON専用。click() はトグルになるため絶対に使わない。
-    const changed = setCheckedTrue(el);
+    const changed = setNativeCheckedTrue(el);
     if (!changed) return false;
 
     await wait(80);
     return linkedChoiceIsOn(el);
   }
 
-  async function applyHiddenCheckAction(action) {
+  async function turnOnAriaChoice(el) {
+    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
+    if (!choiceKind(el).startsWith('aria-')) return false;
+
+    // ON専用。現在OFFであることを確認してから1回だけclickする。
+    // Google Formsの div[role="checkbox"] / div[role="radio"] を対象にする。
+    try {
+      el.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+      el.click();
+      await wait(120);
+      if (linkedChoiceIsOn(el)) return true;
+
+      // click() が無視されるUI向けのフォールバック。
+      el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+      el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+      el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      await wait(120);
+      return linkedChoiceIsOn(el);
+    } catch {
+      return false;
+    }
+  }
+
+  async function turnOnChoice(el) {
+    const kind = choiceKind(el);
+    if (!kind || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
+
+    if (kind.startsWith('aria-')) return await turnOnAriaChoice(el);
+    if (kind.startsWith('native-')) return await turnOnNativeChoice(el);
+    return false;
+  }
+
+  async function applyCheckAction(action) {
     const rx = actionRegex(action);
     if (!rx) return 0;
 
     const selector = action?.selector ||
-      'input[type="checkbox"],input[type="radio"]';
+      'div[role="checkbox"],div[role="radio"],input[type="checkbox"],input[type="radio"]';
 
     let changed = 0;
 
-    // content.js 側の可視UI処理を先行させ、まだOFFのhidden inputだけ補助する。
+    // content.js 側の可視UI処理を先行させ、その後まだOFFの選択肢をON専用で補助する。
     await wait(Number(action?.enhancerDelayMs) || 700);
 
     for (const el of document.querySelectorAll(selector)) {
-      if (!isHiddenChoice(el) || el.disabled || linkedChoiceIsOn(el)) continue;
+      const kind = choiceKind(el);
+      if (!kind || isDisabledChoice(el) || linkedChoiceIsOn(el)) continue;
 
       const label = labelText(el);
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
 
-      if (await turnOnHiddenChoice(el)) changed++;
+      // hidden nativeだけでなく、Google Forms等の可視ARIA choiceも処理する。
+      if (kind.startsWith('native-') || kind.startsWith('aria-')) {
+        if (await turnOnChoice(el)) changed++;
+      }
     }
 
     return changed;
@@ -211,7 +264,7 @@
       if (!action?.type) continue;
 
       if (action.type === 'checkByLabel') {
-        await applyHiddenCheckAction(action);
+        await applyCheckAction(action);
       } else if (action.type === 'selectTextByLabel') {
         await applyFixedSelectAction(action);
       }
