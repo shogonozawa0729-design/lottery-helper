@@ -4,6 +4,7 @@ const ruleStatusEl = document.getElementById('ruleStatus');
 
 const RULE_BASE = 'https://raw.githubusercontent.com/shogonozawa0729-design/lottery-helper/main/';
 const RULE_CACHE_KEY = 'remoteRuleBundleV2';
+const CORE_BUILD = '2026.09.06.56';
 
 function setStatus(text) {
   statusEl.textContent = text;
@@ -34,6 +35,65 @@ function isGoogleFormUrl(urlText) {
     return u.hostname === 'docs.google.com' && u.pathname.startsWith('/forms/d/');
   } catch {
     return false;
+  }
+}
+
+async function ensureGoogleFormCheckboxes(tabId) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: async () => {
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        const negative = /(同意しない|承諾しない|了承しない|希望しない|応募しない|購入しない|不要|キャンセル|受け取らない|受取らない)/i;
+
+        const norm = value => String(value || '')
+          .normalize('NFKC')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const isOn = el => {
+          if (!el) return false;
+          if (el.matches?.('input[type="checkbox"]')) return !!el.checked;
+          return String(el.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
+        };
+
+        const candidates = [...document.querySelectorAll(
+          'div[role="checkbox"], input[type="checkbox"]'
+        )].filter(el => {
+          if (el.disabled) return false;
+          if (String(el.getAttribute?.('aria-disabled') || '').toLowerCase() === 'true') return false;
+          const ownText = norm([
+            el.getAttribute?.('aria-label'),
+            el.closest?.('label')?.innerText,
+            el.labels ? [...el.labels].map(l => l.innerText).join(' ') : ''
+          ].filter(Boolean).join(' '));
+          return !negative.test(ownText);
+        });
+
+        let changed = 0;
+        for (const el of candidates) {
+          if (isOn(el)) continue;
+          try {
+            el.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+            await wait(30);
+            if (isOn(el)) continue;
+            el.click();
+            await wait(100);
+            if (isOn(el)) changed++;
+          } catch {}
+        }
+
+        return {
+          total: candidates.length,
+          changed,
+          on: candidates.filter(isOn).length
+        };
+      }
+    });
+
+    return results?.[0]?.result || { total: 0, changed: 0, on: 0 };
+  } catch (e) {
+    return { total: 0, changed: 0, on: 0, error: e.message || String(e) };
   }
 }
 
@@ -79,15 +139,15 @@ async function syncRemoteRules() {
       rules
     };
     await chrome.storage.local.set({ [RULE_CACHE_KEY]: bundle });
-    ruleStatusEl.textContent = `共通ルール: GitHub ${bundle.rulesVersion || '最新版'}`;
+    ruleStatusEl.textContent = `本体 ${CORE_BUILD} / 共通ルール GitHub ${bundle.rulesVersion || '最新版'}`;
     return bundle;
   } catch (e) {
     const cached = (await chrome.storage.local.get(RULE_CACHE_KEY))[RULE_CACHE_KEY];
     if (cached?.rules?.length) {
-      ruleStatusEl.textContent = `共通ルール: キャッシュ ${cached.rulesVersion || ''}`;
+      ruleStatusEl.textContent = `本体 ${CORE_BUILD} / 共通ルール キャッシュ ${cached.rulesVersion || ''}`;
       return cached;
     }
-    ruleStatusEl.textContent = '共通ルール: GitHub取得失敗（内蔵ルールで動作）';
+    ruleStatusEl.textContent = `本体 ${CORE_BUILD} / 共通ルール GitHub取得失敗`;
     return { fetchedAt: 0, rulesVersion: '', genericConfig: {}, rules: [] };
   }
 }
@@ -231,11 +291,17 @@ fillAllButton?.addEventListener('click', async () => {
 
     if (fillRes?.ok) filled += fillRes.changed || 0;
 
-    // Google FormsはFILL_FORM内のensureCheckedByLabelでcheckboxをON保証する。
-    // AGREE_TERMSをもう一度送ると二重クリック/トグルの原因になるため送らない。
     let agreeRes;
     if (googleForm) {
-      agreeRes = { ok: true, changed: 0, detail: '入力処理内で同意ON保証' };
+      // ルールエンジンの実装差があるChromeプロファイルでもcheckboxを確実にONへ寄せる。
+      // OFFだけをクリックし、ON済みは触らないためトグル化しない。
+      const sweep = await ensureGoogleFormCheckboxes(tab.id);
+      agreed += Number(sweep.changed || 0);
+      agreeRes = {
+        ok: !sweep.error,
+        changed: sweep.changed || 0,
+        detail: `checkbox ${sweep.on || 0}/${sweep.total || 0} ON${sweep.error ? `（${sweep.error}）` : ''}`
+      };
     } else {
       agreeRes = await applyMessageAcrossRules(
         tab.id,
@@ -263,7 +329,7 @@ fillAllButton?.addEventListener('click', async () => {
     `入力 ${filled}項目 / 同意 ${agreed}件` +
     `${failedTabs ? ` / 処理不可 ${failedTabs}タブ` : ''}\n` +
     `${details.slice(0, 8).join('\n')}${details.length > 8 ? '\n…' : ''}\n` +
-    `※左のタブから順番に処理。Google FormsのcheckboxはOFF→ONのみで、ON→OFFにはしません。最終送信は押しません。`
+    `※左のタブから順番に処理。Google Formsのcheckboxは本体側でもOFF→ONを再確認し、ON→OFFにはしません。最終送信は押しません。`
   );
 });
 
