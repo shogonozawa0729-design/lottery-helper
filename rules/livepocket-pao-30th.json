@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.04.9",
+  "version": "2026.09.05.10",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -103,7 +103,7 @@
         },
         {
           "type": "checkByLabel",
-          "labelRegex": "同意する|同意します|了承する|承諾する",
+          "labelRegex": "同意する|同意します|了承する|了承しました|承諾する|全て確認の上.*同意|確認の上.*同意",
           "selector": "input[type=\"checkbox\"],input[type=\"radio\"]"
         },
         {
