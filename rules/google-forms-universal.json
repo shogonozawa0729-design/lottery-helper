@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.48",
+  "version": "2026.09.05.51",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/"]
@@ -37,15 +37,14 @@
         {"type":"fillProfileByLabel","labelRegex":"CARD BOX.*会員番号|CARDBOX.*会員番号|カードボックス.*会員番号|カードボックス.*会員ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"cardboxNumber","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"193.*会員番号|193.*ポイントカード|ポイントカード.*193.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"shop193Number","transform":"digits"},
         {"type":"fillProfileByLabel","labelRegex":"トレカプラザ55.*顧客ID|顧客ID.*トレカプラザ55","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"trecaPlaza55Id","transform":"trim"},
-        {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],input[type=\"radio\"]"}
-      ],
-      "agreeActions": [
+        {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],input[type=\"radio\"]"},
         {
-          "type":"checkByLabel",
+          "type":"ensureCheckedByLabel",
           "labelRegex":"^(?!.*(?:同意しない|承諾しない|了承しない|希望しない|応募しない|購入しない|不要|キャンセル|受け取らない|受取らない)).*$",
           "selector":"div[role=\"checkbox\"],input[type=\"checkbox\"]"
         }
-      ]
+      ],
+      "agreeActions": []
     }
   ],
   "safety": {
