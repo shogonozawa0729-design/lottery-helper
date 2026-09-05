@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "livepocket-pao-30th",
   "name": "LivePocket 共通応募者情報",
-  "version": "2026.09.05.10",
+  "version": "2026.09.05.11",
   "match": {
     "hosts": ["livepocket.jp"],
     "pathPrefixes": ["/purchase/confirm"]
@@ -16,6 +16,36 @@
     {
       "questionRegex": "プレイヤーズクラブ.*ニックネーム|ポケモンカードゲーム.*ニックネーム|プレイヤーズ?.*(ニックネーム|プレイヤーネーム|名前|なまえ|ネーム)|ニックネーム|プレイヤー.?ネーム|Players?.*(Nickname|Name)|Player.?Name",
       "profileKey": "playersName",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "氏名.*フルネーム|本名.*フルネーム|氏名.*本名|本名.*氏名|お名前.*フルネーム|本人確認.*名前",
+      "profileKey": "__fullNameExact",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "氏名.*フリガナ|氏名.*カナ|名前.*フリガナ|名前.*カナ|フリガナ.*フルネーム|カタカナ.*フルネーム",
+      "profileKey": "__fullKana",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "住所.*郵便番号|住所.*都道府県|お住まい.*住所|現住所|住所を.*入力",
+      "profileKey": "__fullAddress",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "生年月日|誕生日|生まれた日",
+      "profileKey": "__birthDateCompact",
+      "transform": "digits"
+    },
+    {
+      "questionRegex": "電話番号|携帯番号|携帯電話|TEL|Tel|tel",
+      "profileKey": "phone",
+      "transform": "digits"
+    },
+    {
+      "questionRegex": "メールアドレス|E.?mail|e.?mail|通知用.*メール",
+      "profileKey": "email",
       "transform": "trim"
     },
     {
