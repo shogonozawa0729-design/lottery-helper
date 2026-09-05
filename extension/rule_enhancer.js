@@ -67,7 +67,8 @@
     if (type !== 'checkbox' && type !== 'radio') return false;
     const st = getComputedStyle(el);
     const rect = el.getBoundingClientRect();
-    return st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0' || rect.width === 0 || rect.height === 0;
+    return st.display === 'none' || st.visibility === 'hidden' ||
+      st.opacity === '0' || rect.width === 0 || rect.height === 0;
   }
 
   function isChecked(el) {
@@ -76,61 +77,102 @@
     return String(el?.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
   }
 
-  async function turnOnHiddenChoice(el) {
-    if (!el || el.disabled || isChecked(el)) return false;
+  function linkedChoiceIsOn(el) {
+    if (!el) return false;
+    if (isChecked(el)) return true;
 
-    try {
-      el.click();
-      await wait(40);
-      if (isChecked(el)) return true;
-    } catch {}
+    const containers = [];
+    const ownLabel = el.closest?.('label');
+    if (ownLabel) containers.push(ownLabel);
 
     if (el.id) {
       try {
-        const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-        if (label) {
-          label.click();
-          await wait(40);
-          if (isChecked(el)) return true;
-        }
+        const explicit = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
+        if (explicit) containers.push(explicit);
       } catch {}
     }
 
+    const tightContainer = el.closest?.(
+      'fieldset, li, tr, [role="listitem"], [class*=field], [class*=item]'
+    );
+    if (tightContainer) containers.push(tightContainer);
+
+    for (const container of containers) {
+      if (container.querySelector?.(
+        'input[type="checkbox"]:checked, input[type="radio"]:checked,' +
+        ' [role="checkbox"][aria-checked="true"], [role="radio"][aria-checked="true"]'
+      )) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function setCheckedTrue(el) {
+    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+
     try {
-      el.checked = true;
+      const proto = Object.getPrototypeOf(el);
+      const desc = proto && Object.getOwnPropertyDescriptor(proto, 'checked');
+      if (desc?.set) desc.set.call(el, true);
+      else el.checked = true;
+
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
-      return isChecked(el);
+      return linkedChoiceIsOn(el);
     } catch {
       return false;
     }
   }
 
+  async function turnOnHiddenChoice(el) {
+    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+
+    // ON専用。click() はトグルになるため絶対に使わない。
+    const changed = setCheckedTrue(el);
+    if (!changed) return false;
+
+    await wait(80);
+    return linkedChoiceIsOn(el);
+  }
+
   async function applyHiddenCheckAction(action) {
     const rx = actionRegex(action);
     if (!rx) return 0;
-    const selector = action?.selector || 'input[type="checkbox"],input[type="radio"]';
+
+    const selector = action?.selector ||
+      'input[type="checkbox"],input[type="radio"]';
+
     let changed = 0;
 
+    // content.js 側の可視UI処理を先行させ、まだOFFのhidden inputだけ補助する。
+    await wait(Number(action?.enhancerDelayMs) || 700);
+
     for (const el of document.querySelectorAll(selector)) {
-      if (!isHiddenChoice(el) || el.disabled || isChecked(el)) continue;
+      if (!isHiddenChoice(el) || el.disabled || linkedChoiceIsOn(el)) continue;
+
       const label = labelText(el);
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
+
       if (await turnOnHiddenChoice(el)) changed++;
     }
+
     return changed;
   }
 
   function selectByText(select, value) {
     const target = compact(value);
     if (!target || !select) return false;
+
     const option = [...select.options].find(o => {
       const text = compact(o.textContent);
       const val = compact(o.value);
       return text === target || val === target || text.includes(target);
     });
+
     if (!option) return false;
+
     const before = select.value;
     select.value = option.value;
     select.dispatchEvent(new Event('input', { bubbles: true }));
@@ -141,27 +183,33 @@
   async function applyFixedSelectAction(action) {
     const value = action?.text ?? action?.valueText ?? action?.optionText ?? '';
     if (!value) return 0;
+
     const rx = actionRegex(action);
     if (!rx) return 0;
+
     const selector = action?.selector || 'select';
     let changed = 0;
 
     for (const sel of document.querySelectorAll(selector)) {
       if (sel.tagName !== 'SELECT' || sel.disabled) continue;
+
       const label = labelText(sel);
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
+
       if (selectByText(sel, value)) {
         changed++;
         await wait(Number(action?.delayMs) || 60);
       }
     }
+
     return changed;
   }
 
   async function applyEnhancements(actions) {
     for (const action of (actions || [])) {
       if (!action?.type) continue;
+
       if (action.type === 'checkByLabel') {
         await applyHiddenCheckAction(action);
       } else if (action.type === 'selectTextByLabel') {
@@ -173,9 +221,14 @@
   chrome.runtime.onMessage.addListener((msg) => {
     if (!msg?.rule) return;
     if (msg.type !== 'FILL_FORM' && msg.type !== 'AGREE_TERMS') return;
+
     const stage = stageForRule(msg.rule);
     if (!stage) return;
-    const actions = msg.type === 'FILL_FORM' ? stage.fillActions : stage.agreeActions;
+
+    const actions = msg.type === 'FILL_FORM'
+      ? stage.fillActions
+      : stage.agreeActions;
+
     applyEnhancements(actions).catch(error => {
       console.warn('[LotteryHelper rule enhancer]', error);
     });
