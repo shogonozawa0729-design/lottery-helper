@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2026.09.05.2",
+  "version": "2026.09.05.3",
   "fields": [
     {
       "key": "cardboxNumber",
@@ -28,6 +28,58 @@
         "福福トレカのポイントカードの番号",
         "福福トレカのポイントカード裏面の10桁番号",
         "福福トレカ10桁番号"
+      ]
+    },
+    {
+      "key": "favoritePokemon",
+      "label": "好きなポケモン（アンケート用）",
+      "type": "text",
+      "autocomplete": "off",
+      "aliases": [
+        "好きなポケモン",
+        "お気に入りのポケモン"
+      ]
+    },
+    {
+      "key": "favoritePokemonReason",
+      "label": "好きなポケモンの理由（アンケート用）",
+      "type": "text",
+      "autocomplete": "off",
+      "aliases": [
+        "好きなポケモンの理由",
+        "ポケモンが好きな理由"
+      ]
+    },
+    {
+      "key": "frequentEventPlace",
+      "label": "よく参加するイベント店舗・場所",
+      "type": "text",
+      "autocomplete": "off",
+      "aliases": [
+        "よくイベントに参加している店舗",
+        "よく参加する店舗",
+        "よく参加する場所"
+      ]
+    },
+    {
+      "key": "favoriteDeck",
+      "label": "好きな・よく使用するデッキ（アンケート用）",
+      "type": "text",
+      "autocomplete": "off",
+      "aliases": [
+        "好きなデッキ",
+        "よく使用しているデッキ",
+        "よく使うデッキ"
+      ]
+    },
+    {
+      "key": "favoriteDeckReason",
+      "label": "好きなデッキの理由（アンケート用）",
+      "type": "text",
+      "autocomplete": "off",
+      "aliases": [
+        "好きなデッキの理由",
+        "デッキの理由"
       ]
     }
   ]
