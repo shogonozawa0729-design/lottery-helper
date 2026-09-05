@@ -28,9 +28,20 @@ function parseUrls(text) {
   return [...new Set(matches.map(u => u.replace(/[),.;]+$/g, '')))];
 }
 
+function isGoogleFormUrl(urlText) {
+  try {
+    const u = new URL(urlText);
+    return u.hostname === 'docs.google.com' && u.pathname.startsWith('/forms/d/');
+  } catch {
+    return false;
+  }
+}
+
 async function queryWebTabs() {
   const tabs = await chrome.tabs.query({ currentWindow: true });
-  return tabs.filter(t => t.id && /^https?:\/\//.test(t.url || ''));
+  return tabs
+    .filter(t => t.id && /^https?:\/\//.test(t.url || ''))
+    .sort((a, b) => Number(a.index ?? 0) - Number(b.index ?? 0));
 }
 
 async function sendToTab(tabId, message) {
@@ -164,19 +175,17 @@ document.getElementById('reloadTabs').addEventListener('click', async () => {
     try {
       await chrome.tabs.reload(tab.id);
       reloaded++;
-    } catch (e) {
+    } catch {
       skipped++;
     }
   }
-  setStatus(`${reloaded}タブをリロードしました。${skipped ? `（${skipped}タブは既に閉じられたためスキップ）` : ''}`);
+  setStatus(`${reloaded}タブを左から順にリロードしました。${skipped ? `（${skipped}タブはスキップ）` : ''}`);
 });
 
 const fillAllButton = document.getElementById('fillForms');
 const legacyAgreeButton = document.getElementById('agreeTerms');
 
-if (fillAllButton) {
-  fillAllButton.textContent = '③ 開いている全タブを入力＋同意';
-}
+if (fillAllButton) fillAllButton.textContent = '③ 開いている全タブを入力＋同意';
 if (legacyAgreeButton) {
   legacyAgreeButton.style.display = 'none';
   legacyAgreeButton.setAttribute('aria-hidden', 'true');
@@ -189,8 +198,7 @@ fillAllButton?.addEventListener('click', async () => {
     return;
   }
 
-  setStatus('GitHubから最新ルールを確認して、全タブを入力＋同意しています…');
-
+  setStatus('GitHubから最新ルールを確認しています…');
   const bundle = await currentRules();
   const tabs = await queryWebTabs();
 
@@ -205,9 +213,13 @@ fillAllButton?.addEventListener('click', async () => {
   let failedTabs = 0;
   const details = [];
 
-  for (const tab of tabs) {
+  for (let i = 0; i < tabs.length; i++) {
+    const tab = tabs[i];
     const label = tab.title || tab.url || `tab:${tab.id}`;
     const rules = rulesForUrl(bundle, tab.url);
+    const googleForm = isGoogleFormUrl(tab.url);
+
+    setStatus(`${i + 1}/${tabs.length} 左から順に処理中…\n${label}`);
 
     const fillRes = await applyMessageAcrossRules(
       tab.id,
@@ -217,27 +229,29 @@ fillAllButton?.addEventListener('click', async () => {
       bundle.genericConfig || {}
     );
 
-    if (fillRes?.ok) {
-      filled += fillRes.changed || 0;
-    }
+    if (fillRes?.ok) filled += fillRes.changed || 0;
 
-    const agreeRes = await applyMessageAcrossRules(
-      tab.id,
-      'AGREE_TERMS',
-      profile,
-      rules,
-      bundle.genericConfig || {}
-    );
-
-    if (agreeRes?.ok) {
-      agreed += agreeRes.changed || 0;
+    // Google FormsはFILL_FORM内のensureCheckedByLabelでcheckboxをON保証する。
+    // AGREE_TERMSをもう一度送ると二重クリック/トグルの原因になるため送らない。
+    let agreeRes;
+    if (googleForm) {
+      agreeRes = { ok: true, changed: 0, detail: '入力処理内で同意ON保証' };
+    } else {
+      agreeRes = await applyMessageAcrossRules(
+        tab.id,
+        'AGREE_TERMS',
+        profile,
+        rules,
+        bundle.genericConfig || {}
+      );
+      if (agreeRes?.ok) agreed += agreeRes.changed || 0;
     }
 
     if (fillRes?.ok || agreeRes?.ok) {
       completedTabs++;
       const fillDetail = fillRes?.detail || `${fillRes?.changed || 0}項目`;
       const agreeDetail = agreeRes?.detail || `${agreeRes?.changed || 0}同意`;
-      details.push(`${label}: 入力 ${fillDetail} / 同意 ${agreeDetail} / 適用ルール ${Math.max(1, rules.length)}件`);
+      details.push(`${label}: 入力 ${fillDetail} / 同意 ${agreeDetail}`);
     } else {
       failedTabs++;
       details.push(`${label}: スキップ/失敗 ${fillRes?.reason || agreeRes?.reason || '処理不可'}`);
@@ -249,7 +263,7 @@ fillAllButton?.addEventListener('click', async () => {
     `入力 ${filled}項目 / 同意 ${agreed}件` +
     `${failedTabs ? ` / 処理不可 ${failedTabs}タブ` : ''}\n` +
     `${details.slice(0, 8).join('\n')}${details.length > 8 ? '\n…' : ''}\n` +
-    `※共通ルール＋店舗別ルールを重ねて適用します。最終応募・購入・送信・確定ボタンは押しません。`
+    `※左のタブから順番に処理。Google FormsのcheckboxはOFF→ONのみで、ON→OFFにはしません。最終送信は押しません。`
   );
 });
 
