@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.49",
+  "rulesVersion": "2026.09.05.50",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [],
@@ -18,23 +18,8 @@
       "enabled": true
     },
     {
-      "id": "google-forms-batoloco-consent-page1",
-      "file": "rules/google-forms-batoloco-maebashi-bunkyo.json",
-      "enabled": true
-    },
-    {
-      "id": "google-forms-mint-kichijoji-30th",
-      "file": "rules/google-forms-mint-kichijoji-30th.json",
-      "enabled": true
-    },
-    {
       "id": "google-forms-universal",
       "file": "rules/google-forms-universal.json",
-      "enabled": true
-    },
-    {
-      "id": "google-forms-torecaplaza55-30th",
-      "file": "rules/google-forms-torecaplaza55-30th.json",
       "enabled": true
     },
     {
