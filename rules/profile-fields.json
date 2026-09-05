@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2026.09.04.1",
+  "version": "2026.09.05.2",
   "fields": [
     {
       "key": "cardboxNumber",
@@ -14,6 +14,20 @@
         "CARDBOX会員番号",
         "カードボックス会員ID",
         "CARD BOX ID"
+      ]
+    },
+    {
+      "key": "fukufukuNumber",
+      "label": "福福トレカ ポイントカード番号（10桁）",
+      "type": "text",
+      "inputMode": "numeric",
+      "autocomplete": "off",
+      "aliases": [
+        "福福トレカ ポイントカード番号",
+        "福福トレカ会員番号",
+        "福福トレカのポイントカードの番号",
+        "福福トレカのポイントカード裏面の10桁番号",
+        "福福トレカ10桁番号"
       ]
     }
   ]
