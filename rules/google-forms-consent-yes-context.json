@@ -15,7 +15,29 @@
         "注意事項を全て確認しました",
         "個人情報の取り扱いについて、同意します"
       ],
-      "fillActions": [],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "顔写真付き.*身分証.*お名前|身分証.*記載.*お名前|本人確認書類.*お名前|本人確認.*お名前|お名前.*フルネーム|氏名.*フルネーム|^氏名.*|^お名前.*|本名|姓名",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "当選連絡.*メールアドレス|当選通知.*メールアドレス|^メールアドレス.*|メールアドレス",
+          "selector": "input[type=\"email\"],input[type=\"text\"],textarea",
+          "profileKey": "email",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "playersId",
+          "transform": "digits"
+        }
+      ],
       "agreeActions": [
         {
           "type": "checkByLabel",
