@@ -1,13 +1,14 @@
 {
   "schemaVersion": 2,
   "id": "google-forms-batoloco-consent-page1",
-  "name": "バトロコ Google Forms 同意ページ",
-  "version": "2026.09.05.33",
+  "name": "バトロコ Google Forms 同意・応募ページ",
+  "version": "2026.09.05.36",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": [
       "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/",
-      "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/"
+      "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/",
+      "/forms/d/e/1FAIpQLSdkidlS8ehIgsWEUB5T0gbxUigmRnfldx36iiRLBBT3RVXQ7Q/"
     ]
   },
   "stages": [
@@ -15,7 +16,8 @@
       "id": "page1-consent",
       "paths": [
         {"prefix": "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/"},
-        {"prefix": "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/"}
+        {"prefix": "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/"},
+        {"prefix": "/forms/d/e/1FAIpQLSdkidlS8ehIgsWEUB5T0gbxUigmRnfldx36iiRLBBT3RVXQ7Q/"}
       ],
       "requiredText": ["確認・同意しましたので応募します"],
       "fillActions": [],
@@ -31,21 +33,22 @@
       "id": "page2plus-common-profile",
       "paths": [
         {"prefix": "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/"},
-        {"prefix": "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/"}
+        {"prefix": "/forms/d/e/1FAIpQLSdohI7u7UuFBMdEidC1p1nCxXqZkFE0eaNq103i3xOMgRPS5Q/"},
+        {"prefix": "/forms/d/e/1FAIpQLSdkidlS8ehIgsWEUB5T0gbxUigmRnfldx36iiRLBBT3RVXQ7Q/"}
       ],
       "fillActions": [
-        {"type":"fillProfileByLabel","labelRegex":"バトロコ.*ポイントカード.*会員番号|ポイントカード.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"batorocoNumber","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"バトロコ.*ポイントカード.*会員番号|ポイントカード.*会員番号|会員番号.*13桁","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"batorocoNumber","transform":"digits"},
         {"type":"fillProfileByLabel","labelRegex":"当選通知.*メールアドレス|通知用.*メールアドレス|^メールアドレス.*|メール.*通知","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
-        {"type":"fillProfileByLabel","labelRegex":"お名前.*漢字|氏名.*漢字|^氏名.*|本名|フルネーム|ポイントカード.*登録時.*名前","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"ご本人様確認.*お名前.*フルネーム|お名前.*フルネーム|お名前.*漢字|氏名.*漢字|^氏名.*|本名|フルネーム|ポイントカード.*登録時.*名前","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"お名前.*カタカナ|お名前.*カナ|フリガナ|ふりがな|氏名.*カナ|名前.*カナ","selector":"input[type=\"text\"],textarea","profileKey":"__fullKana","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"電話番号|携帯番号|TEL|Tel|tel","selector":"input[type=\"text\"],input[type=\"tel\"],textarea","profileKey":"phone","transform":"digits"},
-        {"type":"fillProfileByLabel","labelRegex":"ポケモンカードゲーム.*プレイヤーズクラブ.*ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"playersId","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"ポケモンカードゲーム.*プレイヤーズ.*プレイヤーID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"playersId","transform":"digits"},
         {"type":"fillProfileByLabel","labelRegex":"プレイヤーズクラブ.*プレイヤーズネーム|プレイヤーズネーム|プレイヤー.?ネーム|ニックネーム","selector":"input[type=\"text\"],textarea","profileKey":"playersName","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"X\\(旧Twitter\\).*ID|Twitter.*ID|X.*ID","selector":"input[type=\"text\"],textarea","profileKey":"twitter","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":".*","selector":"input[type=\"date\"]","profileKey":"__birthDate"}
       ],
       "agreeActions": [
-        {"type":"checkByLabel","labelRegex":"確認.*同意|同意|了承|承諾|確認しました|注意事項|規約|本人様のみ","selector":"div[role=\"checkbox\"],input[type=\"checkbox\"]"}
+        {"type":"checkByLabel","labelRegex":"確認しました.*入力に間違いはありません|確認.*間違い.*ありません|確認.*同意|同意|了承|承諾|確認しました|注意事項|規約|本人様のみ","selector":"#i49,div[role=\"checkbox\"],input[type=\"checkbox\"]"}
       ]
     }
   ],
