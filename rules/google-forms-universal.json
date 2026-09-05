@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.06.53",
+  "version": "2026.09.06.56",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/"]
