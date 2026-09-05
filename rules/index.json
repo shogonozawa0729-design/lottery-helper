@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.50",
+  "rulesVersion": "2026.09.05.51",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [],
