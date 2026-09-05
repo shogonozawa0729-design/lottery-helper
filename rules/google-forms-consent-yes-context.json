@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-consent-yes-context",
   "name": "Google Forms 注意事項・個人情報 はい同意",
-  "version": "2026.09.05.40",
+  "version": "2026.09.05.41",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -41,7 +41,7 @@
       "agreeActions": [
         {
           "type": "checkByLabel",
-          "labelRegex": "^はい$",
+          "labelRegex": "はい",
           "selector": "div[role=\"checkbox\"][aria-label=\"はい\"],input[type=\"checkbox\"]"
         }
       ]
