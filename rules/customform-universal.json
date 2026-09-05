@@ -2,7 +2,8 @@
   "schemaVersion": 2,
   "id": "customform-universal",
   "name": "CustomForm 汎用応募者情報",
-  "version": "2026.09.06.52",
+  "version": "2026.09.06.54",
+  "contextMode": "nearest-question-block",
   "match": {
     "hosts": ["customform.jp"],
     "pathPrefixes": ["/form/input/"]
