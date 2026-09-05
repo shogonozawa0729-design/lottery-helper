@@ -113,10 +113,10 @@
 
   function previousTextSibling(node) {
     let sib = node?.previousElementSibling;
-    for (let i = 0; sib && i < 3; i++, sib = sib.previousElementSibling) {
+    for (let i = 0; sib && i < 4; i++, sib = sib.previousElementSibling) {
       if (textControlsInside(sib).length) continue;
-      const text = cleanText(sib.innerText || sib.textContent || '', 1000);
-      if (text.length >= 2 && text.length <= 1000) return text;
+      const text = cleanText(sib.innerText || sib.textContent || '', 1200);
+      if (text.length >= 2 && text.length <= 1200) return text;
     }
     return '';
   }
@@ -139,6 +139,32 @@
       if (siblingText) return siblingText;
     }
     return '';
+  }
+
+  function allInteractiveControls() {
+    return [...document.querySelectorAll(
+      'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="password"]), textarea, select'
+    )].filter(el => !el.disabled);
+  }
+
+  function textBetweenPreviousInteractive(el) {
+    if (!el) return '';
+    try {
+      const controls = allInteractiveControls();
+      const index = controls.indexOf(el);
+      if (index < 0) return '';
+      const previous = index > 0 ? controls[index - 1] : null;
+
+      const range = document.createRange();
+      if (previous) range.setStartAfter(previous);
+      else range.setStart(document.body, 0);
+      range.setEndBefore(el);
+
+      // 「前の部品→今の部品」の間だけを見る。ページ全体の履歴は使わない。
+      return cleanText(range.toString(), 1800);
+    } catch {
+      return '';
+    }
   }
 
   function renderedTextBefore(el, limit = 2600) {
@@ -187,11 +213,14 @@
     const blockHit = uniqueMappingForText(blockText, mappings);
     if (blockHit) return blockHit;
 
-    const strictLocalContext = rule?.contextMode === 'nearest-question-block' || location.hostname === 'customform.jp';
-
-    // CustomFormではページ全体の「直前文章」推測を禁止。
-    // 質問カードを一意に特定できない欄は誤入力防止のため触らない。
-    if (strictLocalContext) return null;
+    // CustomFormでは「直前のフォーム部品から、この入力欄まで」の区間だけを見る。
+    // これにより電話番号など遠い設問文を誤って拾うことを防ぐ。
+    if (location.hostname === 'customform.jp' || rule?.contextMode === 'nearest-question-block') {
+      const boundedText = textBetweenPreviousInteractive(el);
+      const boundedHit = uniqueMappingForText(boundedText, mappings);
+      if (boundedHit) return boundedHit;
+      return null;
+    }
 
     // LivePocket等、質問と入力欄が完全に分離されるサイト向けの最終フォールバック。
     const before = renderedTextBefore(el);
