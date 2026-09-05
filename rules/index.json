@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.38",
+  "rulesVersion": "2026.09.05.39",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [
@@ -9,7 +9,9 @@
       "同意",
       "確認・同意",
       "確認しました",
-      "確認・同意しましたので応募します"
+      "確認・同意しましたので応募します",
+      "注意事項を全て確認しました",
+      "個人情報の取り扱いについて、同意します"
     ],
     "productKeywords": []
   },
@@ -35,6 +37,11 @@
       "enabled": true
     },
     {
+      "id": "google-forms-universal",
+      "file": "rules/google-forms-universal.json",
+      "enabled": true
+    },
+    {
       "id": "google-forms-torecaplaza55-30th",
       "file": "rules/google-forms-torecaplaza55-30th.json",
       "enabled": true
@@ -42,11 +49,6 @@
     {
       "id": "furu1",
       "file": "rules/furu1.json",
-      "enabled": true
-    },
-    {
-      "id": "google-forms-universal",
-      "file": "rules/google-forms-universal.json",
       "enabled": true
     }
   ]
