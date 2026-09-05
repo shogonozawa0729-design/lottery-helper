@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.44",
+  "version": "2026.09.05.45",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -22,9 +22,10 @@
         {"type":"fillProfileByLabel","labelRegex":"プレイヤーズネーム|プレイヤー.?ネーム|ニックネーム","selector":"input[type=\"text\"],textarea","profileKey":"playersName","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"X\\(旧Twitter\\).*アカウント|X\\(旧Twitter\\).*ID|Twitter.*アカウント|Twitter.*ID|X.*@から入力|X.*ID","selector":"input[type=\"text\"],textarea","profileKey":"twitter","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"バトロコ.*ポイントカード.*会員番号|ポイントカード.*会員番号.*13桁|バトロコ.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"batorocoNumber","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"福福トレカ.*ポイントカード.*(?:10桁|番号)|福福トレカ.*(?:会員番号|10桁番号)|ポイントカード.*(?:裏面|記載).*10桁.*福福|福福.*ポイントカード","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"fukufukuNumber","transform":"digits"},
         {"type":"fillProfileByLabel","labelRegex":"MINT.*メンバーズ.*会員番号|MINT.*会員番号|ミント.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"mintNumber","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"CARD BOX.*会員番号|CARDBOX.*会員番号|カードボックス.*会員番号|カードボックス.*会員ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"cardboxNumber","transform":"trim"},
-        {"type":"fillProfileByLabel","labelRegex":"193.*会員番号|会員番号.*193|ポイントカード.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"shop193Number","transform":"digits"},
+        {"type":"fillProfileByLabel","labelRegex":"193.*会員番号|193.*ポイントカード|ポイントカード.*193.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"shop193Number","transform":"digits"},
         {"type":"fillProfileByLabel","labelRegex":"トレカプラザ55.*顧客ID|顧客ID.*トレカプラザ55","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"trecaPlaza55Id","transform":"trim"},
         {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],input[type=\"radio\"]"}
       ],
