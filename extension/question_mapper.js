@@ -10,8 +10,40 @@
       .slice(-max);
   }
 
-  function setNativeValue(el, value) {
-    if (!el || value == null || value === '' || el.disabled || el.readOnly) return false;
+  function kanaToHiragana(value) {
+    return String(value || '').replace(/[ァ-ヶ]/g, ch =>
+      String.fromCharCode(ch.charCodeAt(0) - 0x60)
+    );
+  }
+
+  function profileValue(profile, key) {
+    if (!profile || !key) return '';
+    if (profile[key] != null && String(profile[key]).trim() !== '') return profile[key];
+
+    const fullName = profile.fullName || [profile.lastName, profile.firstName].filter(Boolean).join(' ');
+    const fullKana = profile.fullKana || [profile.lastNameKana, profile.firstNameKana].filter(Boolean).join(' ');
+    const fullAddress = profile.fullAddress || profile.address || [
+      profile.prefecture,
+      profile.city,
+      profile.address1,
+      profile.address2,
+      profile.building
+    ].filter(Boolean).join('');
+    const birthDate = profile.birthDate || profile.birthday || '';
+
+    switch (key) {
+      case '__fullNameExact': return fullName;
+      case '__fullKana': return fullKana;
+      case '__fullKanaHiragana': return kanaToHiragana(fullKana);
+      case '__fullAddress': return fullAddress;
+      case '__birthDate': return birthDate;
+      case '__birthDateCompact': return String(birthDate).replace(/[^0-9]/g, '');
+      default: return '';
+    }
+  }
+
+  function setNativeValue(el, value, allowReadOnly = false) {
+    if (!el || value == null || value === '' || el.disabled || (el.readOnly && !allowReadOnly)) return false;
     const target = String(value);
     if (String(el.value ?? '') === target) return false;
     const proto = Object.getPrototypeOf(el);
@@ -20,13 +52,19 @@
     else el.value = target;
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
+    el.dispatchEvent(new Event('blur', { bubbles: true }));
+    return String(el.value ?? '') === target;
   }
 
   function transformValue(value, transform) {
     let result = String(value ?? '');
     if (transform === 'digits') result = result.replace(/[^0-9]/g, '');
-    if (transform === 'trim' || transform === 'digits') result = result.trim();
+    if (transform === 'dateSlash') {
+      const digits = result.replace(/[^0-9]/g, '');
+      if (digits.length === 8) result = `${digits.slice(0,4)}/${digits.slice(4,6)}/${digits.slice(6,8)}`;
+    }
+    if (transform === 'hiragana') result = kanaToHiragana(result);
+    if (['trim', 'digits', 'dateSlash', 'hiragana'].includes(transform)) result = result.trim();
     return result;
   }
 
@@ -43,10 +81,10 @@
   }
 
   function isTextLikeControl(el) {
-    if (!el || el.disabled || el.readOnly) return false;
+    if (!el || el.disabled) return false;
     if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
     if (el.tagName !== 'INPUT') return false;
-    return ['text', 'number', 'tel', 'email', 'search', 'url'].includes(String(el.type || 'text').toLowerCase());
+    return ['text', 'number', 'tel', 'email', 'search', 'url', 'date'].includes(String(el.type || 'text').toLowerCase());
   }
 
   function directContext(el) {
@@ -61,7 +99,7 @@
     ].filter(Boolean).join(' '), 1000);
   }
 
-  function renderedTextBefore(el, limit = 2200) {
+  function renderedTextBefore(el, limit = 2600) {
     try {
       const range = document.createRange();
       range.setStart(document.body, 0);
@@ -99,8 +137,8 @@
       if (directHits.length === 1) return directHits[0];
     }
 
-    // LivePocket等は設問文とtextareaにHTML labelが結び付いていない。
-    // そこで「この入力欄より前に表示されている本文」のうち、最も直近に現れた設問辞書を採用する。
+    // CustomForm / LivePocket 等は設問文と入力欄にHTML labelが結び付いていないことがある。
+    // 入力欄より前に描画された本文のうち、最も直近の設問辞書を採用する。
     const before = renderedTextBefore(el);
     let best = null;
     let bestIndex = -1;
@@ -112,8 +150,7 @@
       }
     }
 
-    // 遠すぎる文言を誤採用しない。設問は通常入力欄の直前にある。
-    if (best && bestIndex >= Math.max(0, before.length - 900)) return best;
+    if (best && bestIndex >= Math.max(0, before.length - Number(best.maxDistance || 1200))) return best;
     return null;
   }
 
@@ -144,12 +181,15 @@
     for (const el of controls) {
       const mapping = mappingForControl(el, mappings);
       if (!mapping?.profileKey) continue;
-      const value = transformValue(profile[mapping.profileKey], mapping.transform);
+      if (el.readOnly && !mapping.allowReadOnly) continue;
+
+      const rawValue = profileValue(profile, mapping.profileKey);
+      const value = transformValue(rawValue, mapping.transform);
       if (!value) continue;
 
       const didChange = el.tagName === 'SELECT'
         ? selectByText(el, value)
-        : setNativeValue(el, value);
+        : setNativeValue(el, value, !!mapping.allowReadOnly);
 
       if (didChange) {
         changed++;
