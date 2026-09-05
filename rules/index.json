@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.32",
+  "rulesVersion": "2026.09.05.33",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [
@@ -25,7 +25,7 @@
       "enabled": true
     },
     {
-      "id": "google-forms-batoloco-maebashi-bunkyo",
+      "id": "google-forms-batoloco-consent-page1",
       "file": "rules/google-forms-batoloco-maebashi-bunkyo.json",
       "enabled": true
     },
