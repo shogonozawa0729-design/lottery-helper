@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-batoloco-maebashi-bunkyo",
+  "name": "バトロコミニ前橋文京 Google Forms",
+  "version": "2026.09.05.32",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": [
+      "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/"
+    ]
+  },
+  "stages": [
+    {
+      "id": "page1-consent",
+      "paths": [
+        {
+          "prefix": "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/"
+        }
+      ],
+      "requiredText": ["確認・同意しましたので応募します"],
+      "fillActions": [],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します",
+          "selector": "#i7,div[role=\"checkbox\"][aria-label*=\"確認・同意\"],input[type=\"checkbox\"]"
+        }
+      ]
+    },
+    {
+      "id": "page2plus-common-profile",
+      "paths": [
+        {
+          "prefix": "/forms/d/e/1FAIpQLSczt4tueSpKLzI_wCFTpBtofgvqeSbU9jUteQVqGPL5HA_ntg/"
+        }
+      ],
+      "fillActions": [
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "バトロコ.*ポイントカード.*会員番号|ポイントカード.*会員番号",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "batorocoNumber",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "当選通知.*メールアドレス|通知用.*メールアドレス|^メールアドレス.*|メール.*通知",
+          "selector": "input[type=\"email\"],input[type=\"text\"],textarea",
+          "profileKey": "email",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "お名前.*漢字|氏名.*漢字|^氏名.*|本名|フルネーム|ポイントカード.*登録時.*名前",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullNameExact",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "お名前.*カタカナ|お名前.*カナ|フリガナ|ふりがな|氏名.*カナ|名前.*カナ",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "__fullKana",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "電話番号|携帯番号|TEL|Tel|tel",
+          "selector": "input[type=\"text\"],input[type=\"tel\"],textarea",
+          "profileKey": "phone",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "ポケモンカードゲーム.*プレイヤーズクラブ.*ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID",
+          "selector": "input[type=\"text\"],input[type=\"number\"],textarea",
+          "profileKey": "playersId",
+          "transform": "digits"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "プレイヤーズクラブ.*プレイヤーズネーム|プレイヤーズネーム|プレイヤー.?ネーム|ニックネーム",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "playersName",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": "X\\(旧Twitter\\).*ID|Twitter.*ID|X.*ID",
+          "selector": "input[type=\"text\"],textarea",
+          "profileKey": "twitter",
+          "transform": "trim"
+        },
+        {
+          "type": "fillProfileByLabel",
+          "labelRegex": ".*",
+          "selector": "input[type=\"date\"]",
+          "profileKey": "__birthDate"
+        }
+      ],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "確認.*同意|同意|了承|承諾|確認しました|注意事項|規約|本人様のみ",
+          "selector": "div[role=\"checkbox\"],input[type=\"checkbox\"]"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む"]
+  }
+}
