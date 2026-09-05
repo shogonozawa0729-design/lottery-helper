@@ -1,18 +1,9 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.48",
+  "rulesVersion": "2026.09.05.49",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
-    "agreementKeywords": [
-      "了承",
-      "承諾",
-      "同意",
-      "確認・同意",
-      "確認しました",
-      "確認・同意しましたので応募します",
-      "注意事項を全て確認しました",
-      "個人情報の取り扱いについて、同意します"
-    ],
+    "agreementKeywords": [],
     "productKeywords": []
   },
   "adapters": [
