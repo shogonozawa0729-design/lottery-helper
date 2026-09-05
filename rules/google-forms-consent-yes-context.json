@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "id": "google-forms-consent-yes-context",
+  "name": "Google Forms 注意事項・個人情報 はい同意",
+  "version": "2026.09.05.40",
+  "match": {
+    "hosts": ["docs.google.com"],
+    "pathPrefixes": ["/forms/d/e/"]
+  },
+  "stages": [
+    {
+      "id": "consent-yes-context",
+      "paths": [{"prefix": "/forms/d/e/"}],
+      "requiredText": [
+        "注意事項を全て確認しました",
+        "個人情報の取り扱いについて、同意します"
+      ],
+      "fillActions": [],
+      "agreeActions": [
+        {
+          "type": "checkByLabel",
+          "labelRegex": "^はい$",
+          "selector": "div[role=\"checkbox\"][aria-label=\"はい\"],input[type=\"checkbox\"]"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["送信", "フォームをクリア", "購入する", "確定", "申し込む", "応募する"]
+  }
+}
