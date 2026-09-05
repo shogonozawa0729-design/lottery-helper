@@ -43,6 +43,37 @@
     try { return new RegExp(action?.labelRegex || '.*', 'iu'); } catch { return null; }
   }
 
+  // Google Formsなどで選択肢自体が「はい」だけの場合、
+  // その選択肢が属する最小の質問カードまで遡って設問本文を取得する。
+  // フォーム全体まで広げないことで、別設問の「はい」を誤って押すのを防ぐ。
+  function nearestQuestionText(el) {
+    if (!el) return '';
+
+    const own = norm(el.getAttribute?.('aria-label') || el.innerText || '');
+    let node = el.parentElement;
+
+    for (let depth = 0; node && depth < 8; depth++, node = node.parentElement) {
+      const text = norm(node.innerText || '');
+      if (!text) continue;
+
+      const choiceCount = node.querySelectorAll?.(
+        'div[role="checkbox"],div[role="radio"],input[type="checkbox"],input[type="radio"]'
+      )?.length || 0;
+
+      // 自分の「はい」だけしか含まないラッパーは飛ばす。
+      const hasExtraContext = compact(text) !== compact(own) && text.length > own.length + 2;
+      if (!hasExtraContext) continue;
+
+      // 質問カードとして現実的な大きさに限定する。
+      // choiceを含み、巨大なフォーム全体ではない最初の祖先を採用する。
+      if (choiceCount >= 1 && text.length <= 2200) {
+        return text;
+      }
+    }
+
+    return '';
+  }
+
   function labelText(el) {
     const labels = [];
     if (el?.labels) labels.push(...[...el.labels].map(l => l.innerText));
@@ -56,9 +87,10 @@
     labels.push(
       el?.getAttribute?.('aria-label'),
       el?.closest?.('label')?.innerText,
+      nearestQuestionText(el),
       el?.closest?.('fieldset, li, tr, [role="listitem"], [class*=field], [class*=form], form')?.innerText
     );
-    return norm(labels.filter(Boolean).join(' ')).slice(0, 1200);
+    return norm(labels.filter(Boolean).join(' ')).slice(0, 2200);
   }
 
   function choiceKind(el) {
@@ -157,15 +189,12 @@
     if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
     if (!choiceKind(el).startsWith('aria-')) return false;
 
-    // ON専用。現在OFFであることを確認してから1回だけclickする。
-    // Google Formsの div[role="checkbox"] / div[role="radio"] を対象にする。
     try {
       el.scrollIntoView?.({ block: 'center', inline: 'nearest' });
       el.click();
       await wait(120);
       if (linkedChoiceIsOn(el)) return true;
 
-      // click() が無視されるUI向けのフォールバック。
       el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
       el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
       el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
@@ -193,8 +222,6 @@
       'div[role="checkbox"],div[role="radio"],input[type="checkbox"],input[type="radio"]';
 
     let changed = 0;
-
-    // content.js 側の可視UI処理を先行させ、その後まだOFFの選択肢をON専用で補助する。
     await wait(Number(action?.enhancerDelayMs) || 700);
 
     for (const el of document.querySelectorAll(selector)) {
@@ -205,7 +232,6 @@
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
 
-      // hidden nativeだけでなく、Google Forms等の可視ARIA choiceも処理する。
       if (kind.startsWith('native-') || kind.startsWith('aria-')) {
         if (await turnOnChoice(el)) changed++;
       }
