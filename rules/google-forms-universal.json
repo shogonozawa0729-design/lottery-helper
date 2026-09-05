@@ -2,15 +2,15 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.46",
+  "version": "2026.09.05.47",
   "match": {
     "hosts": ["docs.google.com"],
-    "pathPrefixes": ["/forms/d/e/"]
+    "pathPrefixes": ["/forms/d/"]
   },
   "stages": [
     {
       "id": "universal-google-form",
-      "paths": [{"prefix": "/forms/d/e/"}],
+      "paths": [{"prefix": "/forms/d/"}],
       "fillActions": [
         {"type":"fillProfileByLabel","labelRegex":"^メールアドレス.*|メールアドレス|連絡先.*メール|当選連絡.*メール|当選通知.*メール|通知用.*メール","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"(?:あなたの)?姓(?:[（(].*?(?:苗字|名字).*?[）)])?|苗字を入力|名字を入力|^姓[：:\\s]","selector":"input[type=\"text\"],textarea","profileKey":"lastName","transform":"trim"},
