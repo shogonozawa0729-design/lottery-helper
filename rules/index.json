@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2026.09.05.31",
+  "rulesVersion": "2026.09.05.32",
   "profileFieldsFile": "rules/profile-fields.json",
   "generic": {
     "agreementKeywords": [
@@ -22,6 +22,11 @@
     {
       "id": "livepocket-pao-30th",
       "file": "rules/livepocket-pao-30th.json",
+      "enabled": true
+    },
+    {
+      "id": "google-forms-batoloco-maebashi-bunkyo",
+      "file": "rules/google-forms-batoloco-maebashi-bunkyo.json",
       "enabled": true
     },
     {
