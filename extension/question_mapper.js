@@ -42,10 +42,15 @@
     }
   }
 
-  function setNativeValue(el, value, allowReadOnly = false) {
+  function setNativeValue(el, value, allowReadOnly = false, overwrite = false) {
     if (!el || value == null || value === '' || el.disabled || (el.readOnly && !allowReadOnly)) return false;
+    const current = String(el.value ?? '');
     const target = String(value);
-    if (String(el.value ?? '') === target) return false;
+
+    // 自動入力は原則空欄のみ。手入力・既存値を上書きしない。
+    if (!overwrite && current.trim() !== '') return false;
+    if (current === target) return false;
+
     const proto = Object.getPrototypeOf(el);
     const desc = proto && Object.getOwnPropertyDescriptor(proto, 'value');
     if (desc?.set) desc.set.call(el, target);
@@ -87,6 +92,13 @@
     return ['text', 'number', 'tel', 'email', 'search', 'url', 'date'].includes(String(el.type || 'text').toLowerCase());
   }
 
+  function textControlsInside(node) {
+    if (!node?.querySelectorAll) return [];
+    return [...node.querySelectorAll(
+      'textarea, select, input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="password"])'
+    )].filter(isTextLikeControl);
+  }
+
   function directContext(el) {
     const labels = el.labels ? [...el.labels].map(label => label.innerText || label.textContent || '') : [];
     return cleanText([
@@ -97,6 +109,36 @@
       el.getAttribute?.('name'),
       el.id
     ].filter(Boolean).join(' '), 1000);
+  }
+
+  function previousTextSibling(node) {
+    let sib = node?.previousElementSibling;
+    for (let i = 0; sib && i < 3; i++, sib = sib.previousElementSibling) {
+      if (textControlsInside(sib).length) continue;
+      const text = cleanText(sib.innerText || sib.textContent || '', 1000);
+      if (text.length >= 2 && text.length <= 1000) return text;
+    }
+    return '';
+  }
+
+  function nearestQuestionBlockContext(el) {
+    if (!el) return '';
+    let node = el.parentElement;
+
+    for (let depth = 0; node && depth < 10; depth++, node = node.parentElement) {
+      const text = cleanText(node.innerText || node.textContent || '', 1800);
+      const controls = textControlsInside(node);
+
+      // 最小の「1設問=1入力欄」ブロックを最優先。
+      if (text && controls.length === 1 && controls[0] === el && text.length <= 1800) {
+        return text;
+      }
+
+      // CustomFormで見出し(dt等)と入力欄(dd等)が兄弟の場合を拾う。
+      const siblingText = previousTextSibling(node);
+      if (siblingText) return siblingText;
+    }
+    return '';
   }
 
   function renderedTextBefore(el, limit = 2600) {
@@ -127,18 +169,31 @@
     }
   }
 
-  function mappingForControl(el, mappings) {
-    const direct = directContext(el);
-    if (direct) {
-      const directHits = mappings.filter(mapping => {
-        mapping.regex.lastIndex = 0;
-        return mapping.regex.test(direct);
-      });
-      if (directHits.length === 1) return directHits[0];
-    }
+  function uniqueMappingForText(text, mappings) {
+    if (!text) return null;
+    const hits = mappings.filter(mapping => {
+      mapping.regex.lastIndex = 0;
+      return mapping.regex.test(text);
+    });
+    return hits.length === 1 ? hits[0] : null;
+  }
 
-    // CustomForm / LivePocket 等は設問文と入力欄にHTML labelが結び付いていないことがある。
-    // 入力欄より前に描画された本文のうち、最も直近の設問辞書を採用する。
+  function mappingForControl(el, mappings, rule) {
+    const direct = directContext(el);
+    const directHit = uniqueMappingForText(direct, mappings);
+    if (directHit) return directHit;
+
+    const blockText = nearestQuestionBlockContext(el);
+    const blockHit = uniqueMappingForText(blockText, mappings);
+    if (blockHit) return blockHit;
+
+    const strictLocalContext = rule?.contextMode === 'nearest-question-block' || location.hostname === 'customform.jp';
+
+    // CustomFormではページ全体の「直前文章」推測を禁止。
+    // 質問カードを一意に特定できない欄は誤入力防止のため触らない。
+    if (strictLocalContext) return null;
+
+    // LivePocket等、質問と入力欄が完全に分離されるサイト向けの最終フォールバック。
     const before = renderedTextBefore(el);
     let best = null;
     let bestIndex = -1;
@@ -154,9 +209,10 @@
     return null;
   }
 
-  function selectByText(select, value) {
+  function selectByText(select, value, overwrite = false) {
     const target = cleanText(value, 300).toLowerCase();
     if (!target) return false;
+    if (!overwrite && String(select.value || '').trim() !== '') return false;
     const option = [...select.options].find(opt => {
       const text = cleanText(opt.textContent || '', 300).toLowerCase();
       const val = cleanText(opt.value || '', 300).toLowerCase();
@@ -179,7 +235,7 @@
     )].filter(isTextLikeControl);
 
     for (const el of controls) {
-      const mapping = mappingForControl(el, mappings);
+      const mapping = mappingForControl(el, mappings, rule);
       if (!mapping?.profileKey) continue;
       if (el.readOnly && !mapping.allowReadOnly) continue;
 
@@ -188,8 +244,8 @@
       if (!value) continue;
 
       const didChange = el.tagName === 'SELECT'
-        ? selectByText(el, value)
-        : setNativeValue(el, value, !!mapping.allowReadOnly);
+        ? selectByText(el, value, !!mapping.overwrite)
+        : setNativeValue(el, value, !!mapping.allowReadOnly, !!mapping.overwrite);
 
       if (didChange) {
         changed++;
