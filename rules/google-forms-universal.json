@@ -2,12 +2,28 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.42",
+  "version": "2026.09.05.43",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
   },
   "stages": [
+    {
+      "id": "yes-only-consent-page",
+      "paths": [{"prefix": "/forms/d/e/"}],
+      "requiredText": [
+        "注意事項を全て確認しました",
+        "個人情報の取り扱いについて、同意します"
+      ],
+      "fillActions": [
+        {"type":"fillProfileByLabel","labelRegex":"^メールアドレス.*|メールアドレス|連絡先.*メール|当選連絡.*メール|当選通知.*メール|通知用.*メール","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"顔写真付き.*身分証.*お名前|身分証.*記載.*お名前|本人確認書類.*お名前|本人確認.*お名前|お名前.*フルネーム|氏名.*フルネーム|ご本人様確認.*お名前|^氏名.*|^お名前.*|本名|姓名","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"ポケモンカードゲーム.*プレイヤーズ.*ID|プレイヤーズクラブ.*ID|プレイヤーズ?.?ID|プレイヤー.?ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"playersId","transform":"digits"}
+      ],
+      "agreeActions": [
+        {"type":"checkByLabel","labelRegex":".*","selector":"div[role=\"checkbox\"][aria-label=\"はい\"],div[role=\"radio\"][aria-label=\"はい\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
+      ]
+    },
     {
       "id": "universal-google-form",
       "paths": [{"prefix": "/forms/d/e/"}],
@@ -29,7 +45,8 @@
         {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],div[role=\"checkbox\"],input[type=\"radio\"],input[type=\"checkbox\"]"}
       ],
       "agreeActions": [
-        {"type":"checkByLabel","labelRegex":"はい[、。,.\\s]*承諾します|はい[、。,.\\s]*同意します|承諾します|同意します|同意しました|了承します|確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|注意事項.*確認|個人情報.*同意|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],div[role=\"radio\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
+        {"type":"checkByLabel","labelRegex":".*","selector":"div[role=\"checkbox\"][aria-label*=\"承諾します\"]:not([aria-label*=\"承諾しません\"]),div[role=\"checkbox\"][aria-label*=\"同意します\"]:not([aria-label*=\"同意しません\"]),div[role=\"checkbox\"][aria-label*=\"同意しました\"],div[role=\"checkbox\"][aria-label*=\"了承します\"],div[role=\"checkbox\"][aria-label*=\"確認しました\"],div[role=\"radio\"][aria-label*=\"承諾します\"]:not([aria-label*=\"承諾しません\"]),div[role=\"radio\"][aria-label*=\"同意します\"]:not([aria-label*=\"同意しません\"]),div[role=\"radio\"][aria-label*=\"確認しました\"]"},
+        {"type":"checkByLabel","labelRegex":"確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|入力.*間違い.*ありません|規約.*同意|注意事項.*確認|個人情報.*同意|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],div[role=\"radio\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
       ]
     }
   ],
