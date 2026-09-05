@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "id": "customform-universal",
+  "name": "CustomForm 汎用応募者情報",
+  "version": "2026.09.06.52",
+  "match": {
+    "hosts": ["customform.jp"],
+    "pathPrefixes": ["/form/input/"]
+  },
+  "questionMappings": [
+    {
+      "questionRegex": "お名前.*(?:ふりがな|フリガナ)|(?:ふりがな|フリガナ).*お名前|ひらがな.*本名|本名.*ひらがな",
+      "profileKey": "__fullKanaHiragana",
+      "transform": "hiragana"
+    },
+    {
+      "questionRegex": "お名前.*(?:漢字|本人確認|身分証)|(?:氏名|本名).*(?:漢字|本人確認|身分証)|身分証.*お名前|氏名.*フルネーム|お名前.*フルネーム",
+      "profileKey": "__fullNameExact",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "ご住所|住所.*(?:マンション|アパート|番地|都道府県|市町村)|現住所|住所を入力",
+      "profileKey": "__fullAddress",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "生年月日|誕生日|生まれた日",
+      "profileKey": "__birthDate",
+      "transform": "dateSlash",
+      "allowReadOnly": true
+    },
+    {
+      "questionRegex": "メールアドレス|E.?mail|e.?mail|連絡先.*メール|当選.*メール",
+      "profileKey": "email",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "電話番号|携帯番号|携帯電話|TEL|Tel|tel",
+      "profileKey": "phone",
+      "transform": "digits"
+    },
+    {
+      "questionRegex": "プレイヤーズクラブ.*ID|プレイヤー.?ID|トレーナーズウェブサイト.*ID",
+      "profileKey": "playersId",
+      "transform": "digits"
+    },
+    {
+      "questionRegex": "プレイヤー.?ネーム|プレイヤーズネーム",
+      "profileKey": "playersName",
+      "transform": "trim"
+    },
+    {
+      "questionRegex": "X\\(旧Twitter\\).*アカウント|X\\(旧Twitter\\).*ID|Twitter.*アカウント|Twitter.*ID",
+      "profileKey": "twitter",
+      "transform": "trim"
+    }
+  ],
+  "stages": [
+    {
+      "id": "customform-input",
+      "paths": [{"prefix": "/form/input/"}],
+      "fillActions": [],
+      "agreeActions": [
+        {
+          "type": "ensureCheckedByLabel",
+          "labelRegex": "^(?!.*(?:同意しない|承諾しない|了承しない|希望しない|応募しない|購入しない|不要|キャンセル|受け取らない|受取らない)).*$",
+          "selector": "input[type=\"checkbox\"]"
+        },
+        {
+          "type": "ensureCheckedByLabel",
+          "labelRegex": "同意しました|了承しました|承諾しました|確認しました|間違いありません",
+          "selector": "input[type=\"radio\"]"
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "neverClickTexts": ["確認", "送信", "申し込む", "応募する", "確定", "購入する"]
+  }
+}
