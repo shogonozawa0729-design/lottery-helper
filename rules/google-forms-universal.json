@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "google-forms-universal",
   "name": "Google Forms 汎用意味判定",
-  "version": "2026.09.05.37",
+  "version": "2026.09.05.39",
   "match": {
     "hosts": ["docs.google.com"],
     "pathPrefixes": ["/forms/d/e/"]
@@ -12,8 +12,8 @@
       "id": "universal-google-form",
       "paths": [{"prefix": "/forms/d/e/"}],
       "fillActions": [
-        {"type":"fillProfileByLabel","labelRegex":"^メールアドレス.*|メールアドレス|連絡先.*メール|当選通知.*メール|通知用.*メール","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
-        {"type":"fillProfileByLabel","labelRegex":"お名前.*フルネーム|氏名.*フルネーム|ご本人様確認.*お名前|本人確認.*お名前|^氏名.*|^お名前.*|本名|姓名","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"^メールアドレス.*|メールアドレス|連絡先.*メール|当選連絡.*メール|当選通知.*メール|通知用.*メール","selector":"input[type=\"email\"],input[type=\"text\"],textarea","profileKey":"email","transform":"trim"},
+        {"type":"fillProfileByLabel","labelRegex":"顔写真付き.*身分証.*お名前|身分証.*記載.*お名前|本人確認書類.*お名前|本人確認.*お名前|お名前.*フルネーム|氏名.*フルネーム|ご本人様確認.*お名前|^氏名.*|^お名前.*|本名|姓名","selector":"input[type=\"text\"],textarea","profileKey":"__fullNameExact","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"フリガナ|ふりがな|カタカナで入力|お名前.*カナ|氏名.*カナ|名前.*カナ","selector":"input[type=\"text\"],textarea","profileKey":"__fullKana","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"ご住所|住所|お住まい|所在地","selector":"input[type=\"text\"],textarea","profileKey":"__fullAddress","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"生年月日|誕生日|出生年月日|日付","selector":"input[type=\"date\"]","profileKey":"__birthDate"},
@@ -25,10 +25,11 @@
         {"type":"fillProfileByLabel","labelRegex":"MINT.*メンバーズ.*会員番号|MINT.*会員番号|ミント.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"mintNumber","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"CARD BOX.*会員番号|CARDBOX.*会員番号|カードボックス.*会員番号|カードボックス.*会員ID","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"cardboxNumber","transform":"trim"},
         {"type":"fillProfileByLabel","labelRegex":"193.*会員番号|会員番号.*193|ポイントカード.*会員番号","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"shop193Number","transform":"digits"},
-        {"type":"fillProfileByLabel","labelRegex":"トレカプラザ55.*顧客ID|顧客ID.*トレカプラザ55","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"trecaPlaza55Id","transform":"trim"}
+        {"type":"fillProfileByLabel","labelRegex":"トレカプラザ55.*顧客ID|顧客ID.*トレカプラザ55","selector":"input[type=\"text\"],input[type=\"number\"],textarea","profileKey":"trecaPlaza55Id","transform":"trim"},
+        {"type":"checkByLabel","labelRegex":"マイナンバーカード|個人番号カード","selector":"div[role=\"radio\"],div[role=\"checkbox\"],input[type=\"radio\"],input[type=\"checkbox\"]"}
       ],
       "agreeActions": [
-        {"type":"checkByLabel","labelRegex":"確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|注意事項.*同意|同意します|同意しました|了承します|承諾します|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],input[type=\"checkbox\"]"}
+        {"type":"checkByLabel","labelRegex":"注意事項.*(?:全て|すべて).*確認.*(?:はい)?|個人情報.*(?:取り扱い|取扱い).*同意.*(?:はい)?|確認[・\\s]*同意しましたので応募します|確認.*同意.*応募します|確認しました.*入力に間違いはありません|入力.*間違い.*ありません|規約.*同意|同意します|同意しました|了承します|承諾します|本人様のみ|代理.*受け取り.*お断り","selector":"div[role=\"checkbox\"],div[role=\"radio\"],input[type=\"checkbox\"],input[type=\"radio\"]"}
       ]
     }
   ],
