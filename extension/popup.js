@@ -81,26 +81,60 @@ async function syncRemoteRules() {
   }
 }
 
-function ruleForUrl(bundle, urlText) {
+function ruleMatchesUrl(rule, u) {
+  const match = rule?.match || {};
+  const hosts = Array.isArray(match.hosts) ? match.hosts : [];
+  if (hosts.length && !hosts.includes(u.hostname)) return false;
+
+  const prefixes = Array.isArray(match.pathPrefixes) ? match.pathPrefixes : [];
+  if (prefixes.length && !prefixes.some(prefix => u.pathname.startsWith(prefix))) return false;
+
+  return true;
+}
+
+function rulesForUrl(bundle, urlText) {
   try {
     const u = new URL(urlText);
-    return (bundle?.rules || []).find(rule => {
-      const match = rule?.match || {};
-      const hosts = Array.isArray(match.hosts) ? match.hosts : [];
-      if (hosts.length && !hosts.includes(u.hostname)) return false;
-
-      const prefixes = Array.isArray(match.pathPrefixes) ? match.pathPrefixes : [];
-      if (prefixes.length && !prefixes.some(prefix => u.pathname.startsWith(prefix))) return false;
-
-      return true;
-    }) || null;
+    return (bundle?.rules || []).filter(rule => ruleMatchesUrl(rule, u));
   } catch {
-    return null;
+    return [];
   }
 }
 
 async function currentRules() {
   return await syncRemoteRules();
+}
+
+async function applyMessageAcrossRules(tabId, type, profile, rules, genericConfig) {
+  const ruleList = rules.length ? rules : [null];
+  let changed = 0;
+  let anyOk = false;
+  const details = [];
+  let lastReason = '';
+
+  for (const rule of ruleList) {
+    const res = await sendToTab(tabId, {
+      type,
+      profile,
+      rule,
+      genericConfig: genericConfig || {}
+    });
+
+    if (res?.ok) {
+      anyOk = true;
+      changed += Number(res.changed || 0);
+      if (res.detail) details.push(res.detail);
+    } else if (res?.reason) {
+      lastReason = res.reason;
+    }
+  }
+
+  return {
+    ok: anyOk,
+    changed,
+    detail: details.filter(Boolean).join(' + '),
+    reason: lastReason
+  };
 }
 
 document.getElementById('openUrls').addEventListener('click', async () => {
@@ -173,24 +207,27 @@ fillAllButton?.addEventListener('click', async () => {
 
   for (const tab of tabs) {
     const label = tab.title || tab.url || `tab:${tab.id}`;
-    const rule = ruleForUrl(bundle, tab.url);
+    const rules = rulesForUrl(bundle, tab.url);
 
-    const fillRes = await sendToTab(tab.id, {
-      type: 'FILL_FORM',
+    const fillRes = await applyMessageAcrossRules(
+      tab.id,
+      'FILL_FORM',
       profile,
-      rule,
-      genericConfig: bundle.genericConfig || {}
-    });
+      rules,
+      bundle.genericConfig || {}
+    );
 
     if (fillRes?.ok) {
       filled += fillRes.changed || 0;
     }
 
-    const agreeRes = await sendToTab(tab.id, {
-      type: 'AGREE_TERMS',
-      rule,
-      genericConfig: bundle.genericConfig || {}
-    });
+    const agreeRes = await applyMessageAcrossRules(
+      tab.id,
+      'AGREE_TERMS',
+      profile,
+      rules,
+      bundle.genericConfig || {}
+    );
 
     if (agreeRes?.ok) {
       agreed += agreeRes.changed || 0;
@@ -200,7 +237,7 @@ fillAllButton?.addEventListener('click', async () => {
       completedTabs++;
       const fillDetail = fillRes?.detail || `${fillRes?.changed || 0}項目`;
       const agreeDetail = agreeRes?.detail || `${agreeRes?.changed || 0}同意`;
-      details.push(`${label}: 入力 ${fillDetail} / 同意 ${agreeDetail}`);
+      details.push(`${label}: 入力 ${fillDetail} / 同意 ${agreeDetail} / 適用ルール ${Math.max(1, rules.length)}件`);
     } else {
       failedTabs++;
       details.push(`${label}: スキップ/失敗 ${fillRes?.reason || agreeRes?.reason || '処理不可'}`);
@@ -212,7 +249,7 @@ fillAllButton?.addEventListener('click', async () => {
     `入力 ${filled}項目 / 同意 ${agreed}件` +
     `${failedTabs ? ` / 処理不可 ${failedTabs}タブ` : ''}\n` +
     `${details.slice(0, 8).join('\n')}${details.length > 8 ? '\n…' : ''}\n` +
-    `※最終応募・購入・送信・確定ボタンは押しません。`
+    `※共通ルール＋店舗別ルールを重ねて適用します。最終応募・購入・送信・確定ボタンは押しません。`
   );
 });
 
