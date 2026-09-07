@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>抽選応募補助 - メンバー設定</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width:760px; margin:32px auto; padding:0 18px; }
+    h1 { font-size:24px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    label { display:flex; flex-direction:column; gap:6px; font-weight:600; }
+    input, select { min-height:40px; padding:0 10px; font-size:16px; }
+    .wide { grid-column:1/-1; }
+    .hint { font-size:12px; color:#666; font-weight:400; }
+    .sectionTitle { margin-top:12px; padding-top:18px; border-top:1px solid #ddd; font-size:18px; font-weight:800; }
+    button { margin-top:18px; min-height:44px; padding:0 22px; font-weight:700; }
+    #status { margin-top:12px; }
+    @media(max-width:600px){ .grid{grid-template-columns:1fr;} .wide{grid-column:auto;} }
+  </style>
+</head>
+<body>
+  <h1>このChromeプロファイルのメンバー</h1>
+  <p>Chromeプロファイルごとに1人分を保存します。</p>
+  <form id="form">
+    <div class="grid">
+      <label>姓<input name="lastName" autocomplete="family-name"></label>
+      <label>名<input name="firstName" autocomplete="given-name"></label>
+      <label>姓（カナ）<input name="lastNameKana"></label>
+      <label>名（カナ）<input name="firstNameKana"></label>
+      <label class="wide">本人確認書類の氏名表記（任意）
+        <input name="fullNameExact" placeholder="空欄なら「姓＋名」を自動使用">
+        <span class="hint">CLOUD PASSなど本人確認書類と完全一致が必要なサイト用。空欄でも動きます。</span>
+      </label>
+      <label>郵便番号<input name="postalCode" inputmode="numeric"></label>
+      <label>都道府県<input name="prefecture"></label>
+      <label class="wide">住所1（市区町村）<input name="address1" autocomplete="address-level2"></label>
+      <label class="wide">住所2（町名・番地・建物名・部屋番号）<input name="address2" autocomplete="street-address"></label>
+      <label>電話番号<input name="phone" autocomplete="tel"></label>
+      <label>メールアドレス<input name="email" type="email" autocomplete="email"></label>
+      <label>生年月日
+        <input name="birthDate" type="date" autocomplete="bday">
+        <span class="hint">年・月・日の分割、1995/05/09、1995-05-09、19950509などサイトの形式に合わせて入力します。</span>
+      </label>
+      <div></div>
+      <label class="wide">本人確認書類
+        <select name="identityDocument">
+          <option value="">（未設定）</option>
+          <option value="パスポート ＋ 住所確認書類">パスポート ＋ 住所確認書類</option>
+          <option value="運転免許証（マイナ運転免許証は不可）">運転免許証（マイナ運転免許証は不可）</option>
+          <option value="学⽣証（顔写真付き） ＋ 住所確認書類">学⽣証（顔写真付き） ＋ 住所確認書類</option>
+          <option value="マイナンバーカード（通知カードは不可）">マイナンバーカード（通知カードは不可）</option>
+          <option value="⾝体障害者⼿帳">⾝体障害者⼿帳</option>
+          <option value="在留カード">在留カード</option>
+          <option value="小学生以下の申込み">小学生以下の申込み</option>
+        </select>
+        <span class="hint">CLOUD PASSで自動選択する書類です。「持参しない」は自動化対象にしません。</span>
+      </label>
+
+      <div class="wide sectionTitle">店舗・サービスID（任意）</div>
+      <label>プレイヤーズIDの番号<input name="playersId" inputmode="numeric" autocomplete="off"></label>
+      <label>プレイヤーズIDのなまえ<input name="playersName" autocomplete="off"></label>
+      <label>Twitter / X<input name="twitter" placeholder="@からでも、IDだけでも可" autocomplete="off"></label>
+      <label>Tポイント番号<input name="tPointNumber" inputmode="numeric" autocomplete="off"></label>
+      <label>カードラボの番号<input name="cardLaboNumber" autocomplete="off"></label>
+      <label>トイザらスの番号<input name="toysrusNumber" autocomplete="off"></label>
+      <label>ノジマの番号<input name="nojimaNumber" autocomplete="off"></label>
+      <label>バトロコの番号<input name="batorocoNumber" autocomplete="off"></label>
+      <label>晴れる屋の番号<input name="hareruyaNumber" autocomplete="off"></label>
+      <label>ふるいちの番号<input name="furuichiNumber" autocomplete="off"></label>
+      <label>MINTの番号<input name="mintNumber" autocomplete="off"></label>
+      <label>193の番号<input name="shop193Number" autocomplete="off"></label>
+      <label>ヤマシロヤのID<input name="yamashiroyaId" autocomplete="off"></label>
+      <label>トレカプラザ55の番号<input name="trecaPlaza55Id" autocomplete="off"></label>
+    </div>
+    <button type="submit">保存</button>
+    <div id="status"></div>
+  </form>
+  <script src="options.js"></script>
+</body>
+</html>
