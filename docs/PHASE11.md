@@ -1,0 +1,33 @@
+# Phase 1.1 実装記録
+
+レビュー対象は phase01/safety-gateway、版0.9.8.2。mainへのmergeと実運用への配布は別工程です。
+
+## 安全境界
+
+応募先DOMの変更・イベントは従来どおりsafety_gateway.jsのみ。remote actionsはrule_candidates.jsが候補データに変換し、content.jsが必ずGatewayへ渡します。汎用click、submit、任意イベントAPIは公開しません。拡張自身のUIはこの制限の対象外です。
+
+Google FormsではHTTPS docs.google.com/forms/d/に限定し、DIVのrole、aria-checked、tabindex、jscontroller、click用jsaction、同一フォームのPOST formResponse actionを検証します。button/link/submit等の実要素、祖先・子孫のbutton/link、未検証部品は拒否します。これらの属性は信頼を証明する署名ではなく、対応DOM形状の制約です。
+
+ensureGoogleConsentは設問内の必須根拠と明確な肯定規約同意、ensureGoogleEmailRecordingは必須根拠とaria-label全文の厳密一致を必要とします。メール記録は「返信に表示するメールアドレスとして記録する」、またはその間にASCIIメールアドレスと「を」だけが入る文言に限定します。ID・親テキスト・前方一致による許可はありません。
+
+実操作直前に再検証し、Gateway内部だけでclickを1回送出します。サイト自身のaria-checked更新を最大500ms観測し、未確認ならその部品は再読み込みまで再試行しません。強制aria変更や代替イベント送出はありません。既存radio選択は保持します。
+
+productは同意と別用途です。応募商品・購入希望商品等の設問があるnative checkboxのみONにし、checked setterとinput/change/blurを使用します。商品radio、ARIA商品、選択数制限を検出した設問、同意・店舗等が混在する曖昧な設問は操作しません。既存v2ルールを維持し、新しいselectProductByLabel候補を追加しました。商品候補の自動探索は既存リモートルールがなくてもFILL経路から利用できます。リモートJSON自体とrulesVersionは変更していません。
+
+数量・プロフィール・現在タブから右側のみの処理、profile/remoteRuleBundleV2保存キーを維持しています。
+
+## 正式ソースの最小整理
+
+ルートのみを本体とし、ord10ファイルとbackup9ファイルをこの候補ツリーから除外しました。元の実運用フォルダは変更していません。統合元とSHA-256はlocal-sources.json、元GitHubコミットとblob SHAはgithub-source-tree.jsonに記録済みです。旧コピーは過去コミット4a3c3443d461d97663aad284135f36d33880b74dでも追跡できます。
+
+GitHubのextension/popup.js、extension/question_mapper.js、extension/rule_enhancer.jsも除外し、extension/README.mdに案内を残します。ルートのmapper/enhancerはPhase 1の無条件returnによる無効化を維持し、manifestにも注入対象にも含みません。再設計はしていません。AGENTS.mdの配置説明もルートへ合わせます。
+
+GitHubのPRブランチに同一バイトの変更を反映し、レビュー後のmainを唯一の正式ソースとする構成です。ローカル実装リポジトリは独立履歴なのでGitHub commit SHAとは異なります。GitHubへの反映は既存PR headを親にしたfast-forwardで行います。
+
+## 既知の制限・手動確認
+
+- 実Chromeへの拡張登録、実サイト、ログイン済みDOMは未検証です。テストは通信を置換した代表DOMフィクスチャとheadless Edgeです。ARIA属性や必須表現が異なれば操作しません。
+- Gatewayは拡張からの最終操作を拒否しますが、第三者サイトのaddEventListener等が許可した入力・clickに応じて起こす通信/送信まで完全に封じる仕組みではありません。実サイトの副作用確認が必要です。
+- 商品radio/ARIA商品、上限配分、曖昧な設問は手動。Googleメール記録は対応文言と必須根拠が揃わなければ手動です。
+- 静的検査は既知パターンの検出であり形式的証明ではありません。mapper/enhancer再設計、questionMappings統合、schema全面移行は未実施です。
+- 正式配布前には読み込み元/拡張IDを確認し、サイト別に同意・商品・数量・既存値維持と最終操作直前で停止することを確認してください。今回、既存Chromeプロファイルにはアクセスしていません。

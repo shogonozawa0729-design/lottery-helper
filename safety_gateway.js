@@ -5,6 +5,8 @@
   if (!policy) throw new Error('LATIAS policy is required');
   let active = null;
   const writes = new WeakMap();
+  const ariaInFlight = new WeakSet();
+  const uncertainAria = new WeakSet();
   function record(reason) { if (active) active.rejected[reason] = (active.rejected[reason] || 0) + 1; return false; }
   function permitted(el, purpose, option, key) {
     if (!active || active.url !== location.href) return record('no-current-run');
@@ -25,6 +27,7 @@
   }
   function setValue(el, value, options = {}) {
     const purpose = options.purpose || 'profile';
+    if (!['profile','quantity'].includes(purpose)) return record('invalid-value-purpose');
     if (!permitted(el, purpose, null, options.profileKey)) return false;
     if (el.tagName === 'SELECT' || !['INPUT','TEXTAREA'].includes(el.tagName)) return record('invalid-value-target');
     if (value == null || String(value) === '') return false;
@@ -48,6 +51,7 @@
   }
   function setSelect(el, option, options = {}) {
     const purpose = options.purpose || 'profile';
+    if (!['profile','quantity','consent'].includes(purpose)) return record('invalid-select-purpose');
     if (!permitted(el, purpose, option, options.profileKey)) return false;
     if (el.tagName !== 'SELECT' || !option || option.closest('select') !== el || option.disabled || option.parentElement?.disabled || option.hidden) return record('invalid-option');
     if (el.value === option.value) return false;
@@ -68,6 +72,48 @@
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked').set.call(el, true);
     return emit(el, 'consent') && el.checked;
   }
-  // No click, submit, generic property setter, callback or arbitrary event API exists.
-  Object.defineProperty(globalThis, 'LATIASSafety', { value: Object.freeze({ begin, end, setValue, setSelect, ensureConsent, reject: record }), writable: false, configurable: false });
+  function ensureProduct(el) {
+    if (!permitted(el, 'product')) return false;
+    // Purpose cannot turn a radio, a custom role or a submit control into a product.
+    if (el.tagName !== 'INPUT' || el.type !== 'checkbox') return record('invalid-product-target');
+    if (el.checked) return false;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked').set.call(el, true);
+    return emit(el, 'product') && el.checked;
+  }
+  function ariaRadioSelected(el) {
+    if (el.getAttribute('role') !== 'radio') return false;
+    const group = el.closest('[role="radiogroup"]');
+    if (!group) return true; // No group identity means no safe radio operation.
+    return [...group.querySelectorAll('[role="radio"][aria-checked="true"]')].some(other => other !== el && other.closest('[role="radiogroup"]') === group);
+  }
+  async function ensureGoogleChoice(el, purpose) {
+    if (!permitted(el, purpose) || !policy.googleAria(el)) return false;
+    if (el.getAttribute('aria-checked') === 'true') return false;
+    if (ariaInFlight.has(el) || uncertainAria.has(el)) return record('aria-pending-or-unconfirmed');
+    if (ariaRadioSelected(el)) return record('existing-or-unknown-radio-group');
+    const token = active.token;
+    ariaInFlight.add(el);
+    let clicked = false;
+    try {
+      // Revalidate immediately before the only permitted ARIA click, without awaiting.
+      if (!permitted(el, purpose) || !policy.googleAria(el) || el.getAttribute('aria-checked') !== 'false' || ariaRadioSelected(el)) return false;
+      clicked = true;
+      HTMLElement.prototype.click.call(el);
+      // Observe the site's own state update. Never set aria-checked or synthesize fallbacks.
+      for (let pass = 0; pass < 20; pass++) {
+        if (active?.token !== token || !permitted(el, purpose)) break;
+        if (el.getAttribute('aria-checked') === 'true') return true;
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      uncertainAria.add(el);
+      return record('aria-state-not-confirmed');
+    } catch {
+      if (clicked) uncertainAria.add(el);
+      return record('aria-operation-failed');
+    } finally { ariaInFlight.delete(el); }
+  }
+  // Narrow capabilities only: callers cannot choose an event, click handler or purpose.
+  const ensureGoogleConsent = el => ensureGoogleChoice(el, 'consent');
+  const ensureGoogleEmailRecording = el => ensureGoogleChoice(el, 'google-email');
+  Object.defineProperty(globalThis, 'LATIASSafety', { value: Object.freeze({ begin, end, setValue, setSelect, ensureConsent, ensureProduct, ensureGoogleConsent, ensureGoogleEmailRecording, reject: record }), writable: false, configurable: false });
 })();

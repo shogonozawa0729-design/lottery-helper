@@ -2,8 +2,8 @@ const statusEl = document.getElementById('status');
 const memberEl = document.getElementById('member');
 const ruleStatusEl = document.getElementById('ruleStatus');
 
-const CORE_VERSION = '0.9.8.1';
-const CORE_BUILD = 'phase01-safety-1';
+const CORE_VERSION = '0.9.8.2';
+const CORE_BUILD = 'phase11-safety-1';
 const RULE_BASE = 'https://raw.githubusercontent.com/shogonozawa0729-design/lottery-helper/main/';
 const RULE_CACHE_KEY = 'remoteRuleBundleV2';
 

@@ -16,6 +16,7 @@
           transform: ['digits','trim','hiragana'].includes(a.transform) ? a.transform : '' };
       }
       if (a.type === 'selectMaxByLabel') return { ...base, kind: 'quantity' };
+      if (a.type === 'selectProductByLabel') return { ...base, kind: 'product' };
       if (a.type === 'checkByLabel' || a.type === 'ensureCheckedByLabel') return { ...base, kind: 'consent' };
       if (a.type === 'selectPositivePairs') return { ...base, kind: 'consent-select', pairs: (Array.isArray(a.pairs) ? a.pairs : []).slice(0,20).filter(p => Array.isArray(p) && p.length === 2 && p.every(x => typeof x === 'string' && x.length < 200)) };
       // Fixed answers / clicks / callbacks / arbitrary setters are not capabilities.

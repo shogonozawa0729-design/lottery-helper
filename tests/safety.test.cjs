@@ -149,3 +149,64 @@ test('unsupported messages and content-script senders cannot open a mutation ses
   assert.equal(await page.evaluate(()=>listeners[0]({type:'FILL_FORM',profile:{email:'x'}},{id:'other'},()=>{})),false);
   assert.deepEqual(await page.evaluate(()=>events),[]); await page.close();
 });
+
+const googleURL='https://docs.google.com/forms/d/e/test/viewform';
+function googleForm(inner){return `<form method="post" action="/forms/d/e/test/formResponse">${inner}</form>`;}
+function ariaQuestion(id,title='利用規約',label='同意します',role='checkbox',required=true){return `<div role="listitem"><div role="heading">${title}${required?'<span aria-label="必須の質問">*</span>':''}</div><div role="${role==='radio'?'radiogroup':'group'}"><div id="${id}" role="${role}" aria-checked="false" tabindex="0" jscontroller="fixture" jsaction="click:fixture" aria-label="${label}">${label}</div></div></div>`;}
+async function wireGoogle(page){await page.evaluate(()=>{document.querySelectorAll('div[jscontroller]').forEach(el=>el.addEventListener('click',()=>el.setAttribute('aria-checked','true')));});}
+
+test('Google Forms verified required affirmative ARIA checkbox and radio use dedicated Gateway once',async()=>{
+ const page=await fixture(googleForm(ariaQuestion('check')+ariaQuestion('radio','利用規約','はい','radio')),googleURL);await wireGoogle(page);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,2);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);
+ assert.deepEqual(await page.evaluate(()=>events.map(x=>[x.type,x.id])),[['click','check'],['click','radio']]);
+ assert.equal(await page.evaluate(()=>typeof LATIASSafety.click),'undefined');await page.close();
+});
+
+test('Google Forms email recording requires whole exact label and required evidence',async()=>{
+ const good='返信に表示するメールアドレスとして test@example.invalid を記録する';
+ const page=await fixture(googleForm(ariaQuestion('good','メール',good)+ariaQuestion('optional','メール',good,'checkbox',false)+ariaQuestion('suffix','メール',good+'（広告にも利用）')+ariaQuestion('other','メール','返信に表示するメールアドレスとして任意の情報を記録する')+ariaQuestion('context','メール '+good,'チェックする')),googleURL);await wireGoogle(page);
+ assert.equal((await send(page,{type:'FILL_FORM',profile:{}})).changed,1);
+ assert.deepEqual(await page.evaluate(()=>events.map(x=>x.id)),['good']);await page.close();
+});
+
+test('Google Forms negative optional store pickup identity and survey choices stay untouched',async()=>{
+ const html=ariaQuestion('negative','利用規約','同意しない')+['利用規約 任意','利用規約 店舗','利用規約 受取日','利用規約 本人確認','利用規約 アンケート'].map((t,i)=>ariaQuestion('x'+i,t)).join('');
+ const page=await fixture(googleForm(html),googleURL);await wireGoogle(page);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);assert.deepEqual(await page.evaluate(()=>events),[]);await page.close();
+});
+
+test('PRIORITY: spoofed Google role on button submit link or nested button never activates via any capability',async()=>{
+ const html='<fieldset><legend>利用規約 必須</legend>'+['<button type="submit"','<button','<input type="submit"','<a href="/final"','<div'].map((tag,i)=>`${tag} id="bad${i}" role="checkbox" aria-checked="false" aria-required="true" tabindex="0" jscontroller="fixture" jsaction="click:fixture" aria-label="同意します">${i===4?'<button>送信</button>':'同意します'}${tag.startsWith('<input')?'':tag.startsWith('<a')?'</a>':tag.startsWith('<div')?'</div>':'</button>'}`).join('')+'</fieldset>';
+ const page=await fixture(googleForm(html),googleURL);
+ const before=await page.locator('body').innerHTML();
+ await page.evaluate(async()=>{LATIASSafety.begin();for(const el of document.querySelectorAll('[id^=bad]')){await LATIASSafety.ensureGoogleConsent(el);await LATIASSafety.ensureGoogleEmailRecording(el);LATIASSafety.ensureProduct(el);LATIASSafety.ensureConsent(el);}LATIASSafety.end();});
+ const r={schemaVersion:2,id:'evil',match:{hosts:['docs.google.com']},stages:[{paths:[{prefix:'/forms/'}],fillActions:['checkByLabel','selectProductByLabel','fillProfileByLabel','selectMaxByLabel','clickText','submit'].map(type=>({type,selector:'[id^=bad]',labelRegex:'.*',profileKey:'email'}))}]};
+ await send(page,{type:'FILL_FORM',profile,rule:r});assert.deepEqual(await page.evaluate(()=>events),[]);assert.equal(await page.locator('body').innerHTML(),before);await page.close();
+});
+
+test('native product checkbox is independent from consent; radio constrained manual and ARIA products stay unchanged',async()=>{
+ const field=(title,inner)=>`<fieldset><legend>${title}</legend>${inner}</fieldset>`;
+ const choice=(id,type='checkbox')=>`<label><input id="${id}" type="${type}">商品A</label>`;
+ const page=await fixture(field('購入希望商品',choice('product'))+field('応募商品',choice('radio','radio'))+field('応募商品 最大1つ',choice('limited'))+field('応募商品 店舗',choice('store'))+field('利用規約 必須',choice('consent'))+field('応募商品','<div id="ariaProduct" role="checkbox" aria-checked="false">商品A</div>'));
+ assert.equal((await send(page,{type:'FILL_FORM',profile:{},rule:rule([{type:'selectProductByLabel',selector:'input,[role=checkbox]',labelRegex:'.*'}])})).changed,1);
+ assert.deepEqual(await page.evaluate(()=>['product','radio','limited','store','consent'].map(id=>document.getElementById(id).checked)),[true,false,false,false,false]);
+ assert.deepEqual(await page.evaluate(()=>events.map(x=>[x.type,x.id])),[['input','product'],['change','product'],['blur','product']]);await page.close();
+});
+
+test('Google ARIA contract rejects other origins missing controller wrong form action and existing radio choice',async()=>{
+ const html=googleForm(ariaQuestion('yes'));
+ const outside=await fixture(html);await wireGoogle(outside);await send(outside,{type:'AGREE_TERMS',rule:rule([],[{type:'checkByLabel',selector:'[role=checkbox]',labelRegex:'.*'}])});assert.deepEqual(await outside.evaluate(()=>events),[]);await outside.close();
+ for(const mutation of ['controller','action','existing']){
+  const page=await fixture(googleForm(ariaQuestion('yes','利用規約','はい','radio')),googleURL);await wireGoogle(page);
+  await page.evaluate(kind=>{const el=document.getElementById('yes');if(kind==='controller')el.removeAttribute('jscontroller');if(kind==='action')document.querySelector('form').action='/forms/d/e/other/formResponse';if(kind==='existing'){const other=el.cloneNode(true);other.id='no';other.setAttribute('aria-checked','true');other.setAttribute('aria-label','同意しない');el.parentElement.appendChild(other);}},mutation);
+  assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);assert.deepEqual(await page.evaluate(()=>events),[]);await page.close();
+ }
+});
+
+test('unconfirmed Google click never forces aria state or retries; value API cannot borrow choice purposes',async()=>{
+ const page=await fixture(googleForm(ariaQuestion('pending')+'<fieldset><legend>応募商品</legend><label><input id="p" type="checkbox">商品A</label></fieldset>'),googleURL);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);
+ assert.equal(await page.locator('#pending').getAttribute('aria-checked'),'false');assert.deepEqual(await page.evaluate(()=>events.map(x=>x.type)),['click']);
+ assert.equal(await page.evaluate(()=>{LATIASSafety.begin();const result=LATIASSafety.setValue(document.getElementById('p'),'changed',{purpose:'product'});LATIASSafety.end();return result;}),false);await page.close();
+});

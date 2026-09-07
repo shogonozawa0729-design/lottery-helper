@@ -33,11 +33,15 @@ test('popup only processes active tab and tabs to its right; previous core is no
   assert.deepEqual(calls,[]);
 });
 
-test('profile schema/save code and all backups/ord stay byte-identical to snapshot',()=>{
+test('profile schema/save code stays byte-identical and archived copies are absent',()=>{
   const inventory=JSON.parse(read('docs/local-sources.json'));
-  for(const entry of inventory.files.filter(e=>e.path.startsWith('lottery-helper_ord/') || e.path.includes('.backup-') || ['options.js','options.html','dynamic_profile_fields.js','background.js'].includes(e.path))) {
+  for(const entry of inventory.files.filter(e=>['options.js','options.html','dynamic_profile_fields.js','background.js'].includes(e.path))) {
     const hash=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,entry.path))).digest('hex');
     assert.equal(hash,entry.sha256,entry.path);
+  }
+  for(const entry of inventory.files.filter(e=>e.path.startsWith('lottery-helper_ord/') || e.path.includes('.backup-'))) {
+    assert.match(entry.sha256,/^[a-f0-9]{64}$/);
+    assert.equal(fs.existsSync(path.join(root,entry.path)),false,entry.path);
   }
   assert.match(read('options.js'),/profile:\s*\{\s*\.\.\.existingProfile,\s*\.\.\.data\s*\}/);
   assert.match(read('options.js'),/chrome\.storage\.local\.get\('profile'\)/);
@@ -50,5 +54,5 @@ test('ord split kana improvement and corrected spacing are present only in activ
   assert.ok(!content.includes('/[\\\\s　]'));
   assert.ok(content.includes('/[\\s　]'));
   assert.match(content,/identityCorrection: true/);
-  assert.equal(manifest.version,'0.9.8.1');
+  assert.equal(manifest.version,'0.9.8.2');
 });

@@ -1,5 +1,5 @@
 (() => {
-  const HELPER_VERSION = '0.9.8.1';
+  const HELPER_VERSION = '0.9.8.2';
   const gateway = globalThis.LATIASSafety;
   if (!gateway) throw new Error('LATIAS Safety Gateway missing');
   if (globalThis.__lotteryHelperCoreVersion && globalThis.__lotteryHelperCoreVersion !== HELPER_VERSION) throw new Error('Reload page to retire previous LATIAS');
@@ -566,7 +566,9 @@
         } else if (candidate.kind === 'quantity') {
           if (el.tagName === 'SELECT' && selectMaxNumeric(el)) changed++;
         } else if (candidate.kind === 'consent') {
-          if (gateway.ensureConsent(el)) changed++;
+          if (await clickRuleChoice(el)) changed++;
+        } else if (candidate.kind === 'product') {
+          if (gateway.ensureProduct(el)) changed++;
         } else if (candidate.kind === 'consent-select') {
           if (el.tagName !== 'SELECT') { gateway.reject('invalid-consent-select'); continue; }
           const texts = [...el.options].map(o => o.textContent.trim());
@@ -595,7 +597,7 @@
   function isRuleChoiceChecked(el) {
     return el?.tagName === 'INPUT' ? !!el.checked : el?.getAttribute('aria-checked') === 'true';
   }
-  async function clickRuleChoice(el) { return gateway.ensureConsent(el); }
+  async function clickRuleChoice(el) { return el?.tagName === 'INPUT' ? gateway.ensureConsent(el) : gateway.ensureGoogleConsent(el); }
 
   function checkboxLikeElements(root = document) {
     return [...root.querySelectorAll('input[type=checkbox], [role=checkbox]')];
@@ -642,7 +644,7 @@
     for (const el of checkboxLikeElements()) {
       if (!looksLikeProductChoice(el, genericConfig)) continue;
       if (isCheckedLike(el)) continue;
-      if (clickCheckboxLike(el)) changed++;
+      if (gateway.ensureProduct(el)) changed++;
     }
     return changed;
   }
@@ -896,47 +898,13 @@
       /抽選|応募|予約販売/.test(document.title || '');
   }
 
-  function findGoogleFormsEmailRecordingCheckbox() {
-    if (!isGoogleFormsPage()) return null;
-
-    const direct = document.querySelector(
-      '[role="checkbox"][aria-label^="返信に表示するメールアドレスとして"]'
-    );
-    if (direct) return direct;
-
-    // Current Google Forms builds expose this control as a DIV role=checkbox.
-    // ID can change between forms, so #i5 is only a last fallback on lottery forms.
-    const currentFormFallback = document.querySelector('#i5[role="checkbox"]');
-    if (currentFormFallback) {
-      const aria = String(currentFormFallback.getAttribute('aria-label') || '');
-      if (/返信に表示するメールアドレスとして.*記録する/.test(aria)) {
-        return currentFormFallback;
-      }
-    }
-
-    const candidates = [
-      ...document.querySelectorAll('[role="checkbox"], input[type="checkbox"]')
-    ];
-
-    return candidates.find(el => {
-      const text = cleanText([
-        el.getAttribute('aria-label'),
-        getLabelText(el),
-        el.closest('label')?.innerText,
-        el.parentElement?.innerText
-      ].filter(Boolean).join(' '), 500);
-
-      return /返信に表示するメールアドレスとして.*記録する/.test(text);
-    }) || null;
-  }
-
   async function ensureGoogleFormsEmailRecording() {
-    if (!isTorecaPlaza55OrLotteryGoogleForm()) return 0;
-
-    const el = findGoogleFormsEmailRecordingCheckbox();
-    if (!el || isCheckedLike(el)) return 0;
-
-    return (await clickRuleChoice(el)) ? 1 : 0;
+    if (!isGoogleFormsPage()) return 0;
+    let changed = 0;
+    for (const el of document.querySelectorAll('[role="checkbox"]')) {
+      if (await gateway.ensureGoogleEmailRecording(el)) changed++;
+    }
+    return changed;
   }
 
   async function forceGoogleFormsRequiredChecks() {
@@ -966,24 +934,8 @@
       if (!own || negative.test(own)) continue;
       const context = cleanText(questionContext(el), 1800);
       const positiveOwn = /(同意します|同意しました|了承します|了承しました|承諾します|承諾しました|確認しました|はい(?:\s|$|\(|（))/i.test(own);
-      const safeQuestion = /(同意|了承|承諾|確認|注意事項|個人情報|登録していますか|本人確認)/i.test(context);
+      const safeQuestion = /(規約|同意|了承|承諾|確認|注意事項|個人情報|登録していますか|本人確認)/i.test(context);
       if (!positiveOwn || !safeQuestion) continue;
-      if (await clickRuleChoice(el)) changed++;
-    }
-    return changed;
-  }
-
-  async function forceGoogleFormsProducts(genericConfig = {}) {
-    if (!isGoogleFormsPage()) return 0;
-    let changed = 0;
-
-    for (const el of checkboxLikeElements()) {
-      if (isCheckedLike(el)) continue;
-
-      const label = choiceContext(el);
-      if (/返信に表示するメールアドレス|回答のコピーを自分宛に送信する/.test(label)) continue;
-      if (!looksLikeProductChoice(el, genericConfig)) continue;
-
       if (await clickRuleChoice(el)) changed++;
     }
     return changed;
@@ -995,7 +947,7 @@
     let changed = 0;
     for (let pass = 0; pass < 2; pass++) {
       changed += await forceGoogleFormsRequiredChecks();
-      changed += await forceGoogleFormsProducts(genericConfig);
+      changed += await ensureGoogleFormsEmailRecording();
       changed += await forceGoogleFormsPositiveRadios();
       if (pass < 1) await wait(120);
     }
@@ -1136,18 +1088,19 @@
         }
 
         if (msg?.type === 'FILL_FORM') {
-          // CustomFormは汎用推測・リモートルールを重ねず、本体の専用安全経路だけで処理する。
+          const productChanged = genericSelectProducts(msg.genericConfig || {});
+          // CustomFormのプロフィールは専用経路。商品は上の共通product policyで判定済み。
           if (isCustomFormPage()) {
             const result = await customFormFill(msg.profile || {});
             return {
               ok: true,
-              changed: result.changed || 0,
+              changed: productChanged + (result.changed || 0),
               detail: `CustomForm本体: ${result.details?.length ? result.details.join(', ') : '変更なし'} / 店舗選択・最終送信は手動`,
               adapter: 'customform-core'
             };
           }
 
-          let preChanged = 0;
+          let preChanged = productChanged;
 
           if (isGoogleFormsPage()) {
             preChanged += await googleFormsPreFill(msg.genericConfig || {});
@@ -1156,7 +1109,7 @@
           if (msg.rule) {
             const result = await executeCandidates(remoteRuleFill(msg.rule), msg.profile || {});
             const totalChanged = preChanged + (result.changed || 0);
-            const prefix = preChanged ? `Google Forms共通チェック ${preChanged}件 / ` : '';
+            const prefix = preChanged ? `共通の安全操作 ${preChanged}件 / ` : '';
             return {
               ok: true,
               changed: totalChanged,
@@ -1197,7 +1150,7 @@
           }
 
           if (isGoogleFormsPage()) {
-            const changed = await forceGoogleFormsRequiredChecks() + await forceGoogleFormsPositiveRadios();
+            const changed = await forceGoogleFormsRequiredChecks() + await forceGoogleFormsPositiveRadios() + await ensureGoogleFormsEmailRecording();
             markFinalButtons(msg.rule || {});
             return {
               ok: true,

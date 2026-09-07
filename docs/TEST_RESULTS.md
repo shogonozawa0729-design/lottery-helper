@@ -1,24 +1,23 @@
-# Phase 0 / Phase 1 テスト結果
+# Phase 0 / 1 / 1.1 テスト結果
 
-2026-09-07に実施。Node.js標準test runner、Playwright 1.62.1、headless Microsoft Edgeを使用。
+2026-09-07実施。Node.js標準test runner、Playwright 1.62.1、headless Microsoft Edgeを使用。
 
-**17テスト成功、失敗0。** JavaScript構文検査および `git diff --check` も実施。
+**24件成功、失敗0、スキップ0。既存17件と追加7件。**
 
-優先確認:
+追加検証:
 
-- 悪意あるremote selectorがsubmit/button/link/imageや偽装checkboxを指しても、DOM変更・click/input/change/blur/submit等のイベントが0。
-- remote compilerはDOMのないVM内でも動作し、操作候補だけを返す。overwrite/allowReadOnlyを引き継がない。
-- 必須・肯定・規約等の同意が揃ったnative部品だけON。任意項目、拒否、既存radio選択は変更しない。
-- ログイン/CAPTCHA/本人確認/受取日/店舗/任意アンケート、hidden/readonly/ARIA偽装/inlineイベントを拒否。
-- 通常プロフィール入力、既存値保持、ordの空白補正で英字sを保持。
-- 数量のmax空欄、既存値、単位付きoption、disabled option/optgroup。
-- 未対応ホスト、認証フォーム、切り離されたDOM、URL変化、実行セッション外を拒否。
-- Google Forms/CustomFormの組み込み経路もGatewayを通り、ページロード時には操作しない。
-- 複数メッセージを直列化。legacy mapper/enhancerは追加listenerを登録しない。
-- popupは現在タブから右だけを対象とし、古いcontentへの追加注入を拒否。
-- 保存コード・ord・backupは元ファイルのSHA-256と一致。
-- manifestで読み込むページ用スクリプトにGateway外の既知の直接操作パターンがない。
+- Google Formsの必須肯定ARIA checkbox/radioを1回だけON。
+- メール記録の全文一致・必須条件。任意、付加文言、親テキストだけの一致を拒否。
+- 否定・任意・店舗・受取日・本人確認・アンケートは不変。
+- 最優先: Google Formsの偽装button/submit/link/子buttonを全capabilityと悪意あるremote selectorから操作してもDOM・イベント変化なし。
+- native商品checkboxのみON。商品radio/ARIA、選択数制限、店舗、同意用途との混同を拒否。
+- 別ホスト、controller欠落、不一致form action、既存radio選択を拒否。
+- ARIAのサイト側更新が未確認なら強制状態変更や再clickなし。value APIへのproduct用途転用を拒否。
 
-テストHTMLは架空データのみ。実応募先の通信・最終操作、実Chromeプロファイル、実際の拡張登録はテストしていません。外部サイトのJavaScript副作用を全面的に検証した結果ではありません。
+既存回帰検証: submit系悪意あるselector、プロフィールと既存値、空白補正の英字s、数量max空欄/既存値/「3個」/disabled option、必須肯定同意、手動対象除外、セッション・URL・sender検証、単一キュー、候補データ専用性、Gateway外の既知DOM操作パターン、現在タブと右側のみの処理を確認しました。
 
-再実行方法と残る手動確認は `PHASE01.md` を参照してください。
+スナップショット検査は今回の整理に合わせ、保存コード4ファイルのSHA-256一致とord/backupが実行ツリーに存在しないこと・由来ハッシュの保持を検査します。元の実運用フォルダ31ファイルは別途固定SHA-256との一致を確認しました。
+JavaScript構文検査、git diff --checkも成功。
+
+実行コマンド: node --test tests/*.test.cjs（PlaywrightをNODE_PATH、EdgeをLATIAS_BROWSERで指定）。
+通信は架空DOMへ置換し、chrome.runtimeはスタブです。**実Chrome登録・実サイト・既存プロファイルは未検証**。ARIAは対応構造を模したフィクスチャの検証であり、現行実サイトのDOMを取得したものではありません。第三者JavaScriptによる通信・送信の副作用の完全抑止は検証できません。
