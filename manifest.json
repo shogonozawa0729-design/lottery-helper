@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LATIAS",
-  "version": "0.9.8.2",
+  "version": "0.9.8.3",
   "description": "抽選URLの一括オープン・左から順のリロード・フォーム入力・規約同意を補助し、サイト別ルールをGitHubから自動取得します。最終の申込・送信・購入・確定操作は自動実行しません。",
   "permissions": [
     "storage",
@@ -38,5 +38,5 @@
       "run_at": "document_idle"
     }
   ],
-  "version_name": "0.9.8 Phase 1 safety candidate"
+  "version_name": "0.9.8.3 Phase 1.2 safety candidate"
 }

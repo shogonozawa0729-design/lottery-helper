@@ -1,3 +1,16 @@
+# Phase 1.2 テスト結果
+
+2026-09-08実施。**28件成功、失敗0、スキップ0（既存24件＋回帰4件）**。
+
+- 身分証記載氏名text入力と既存値保持、アップロード・選択・本人確認済み申告の拒否。
+- 内側に「はい」しかない入れ子構造からタイトル・必須表示を取得し、注意事項/個人情報の必須肯定checkboxとradioを1回だけON。inspectにもタイトルとrequired=trueを反映。
+- 同文言の任意設問、否定、店舗/受取日/本人確認/CAPTCHA/ログイン/アンケート/決済、偽装submitは不変。
+- 隣接設問の必須表示の流用、欠落/複数タイトルを拒否。送信buttonのイベント0。
+
+Node.js test runner + Playwright + headless Edge。実サイト通信はフィクスチャに置換。JS構文検査・git diff --checkも成功。修正後の実Chrome・実サイトは未検証です。
+
+以下はPhase 1.1時点の検証記録です。
+
 # Phase 0 / 1 / 1.1 テスト結果
 
 2026-09-07実施。Node.js標準test runner、Playwright 1.62.1、headless Microsoft Edgeを使用。

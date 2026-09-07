@@ -13,8 +13,32 @@
     return normalize([...new Set([...labels, ...ids.map(id => document.getElementById(id)?.textContent),
       el.getAttribute('aria-label'), el.getAttribute('placeholder'), el.closest('label')?.textContent].filter(Boolean).map(normalize))].join(' '));
   }
+  function googleQuestion(el) {
+    if (location.protocol !== 'https:' || location.hostname !== 'docs.google.com' || !location.pathname.startsWith('/forms/d/')) return null;
+    const boundary = '[role="listitem"],.Qr7Oae,.geS5n,.freebirdFormviewerViewItemsItemItem';
+    const titleSelector = '[role="heading"],.M7eMe,.freebirdFormviewerViewItemsItemItemTitle';
+    // Skip choice wrappers, but never search the form/body or borrow a sibling's title.
+    for (let group = el?.parentElement; group && !['FORM','BODY','HTML'].includes(group.tagName); group = group.parentElement) {
+      if (!group.matches(boundary)) continue;
+      const titles = [...group.querySelectorAll(titleSelector)].filter(t =>
+        !t.closest('[role="checkbox"],[role="radio"],button,a') &&
+        !t.parentElement?.closest(titleSelector));
+      if (!titles.length) continue;
+      if (titles.length !== 1) return null;
+      const title = titles[0];
+      for (let parent = title.parentElement; parent && parent !== group; parent = parent.parentElement) {
+        if (parent.matches(boundary) && !parent.contains(el)) return null;
+      }
+      const header = title.closest('[role="heading"],.HoXoMd,.freebirdFormviewerViewItemsItemItemHeader') || title;
+      if (!group.contains(header) || header.querySelector('input,select,textarea,[role="checkbox"],[role="radio"]')) return null;
+      const text = normalize(header.textContent);
+      if (!text) return null;
+      return { group, title: header, text };
+    }
+    return null;
+  }
   function context(el) {
-    const group = el.closest('fieldset,[role="listitem"],.Qr7Oae,.geS5n,.question,.form-group,[class*="form_item"],[class*="field"]');
+    const group = googleQuestion(el)?.group || el.closest('fieldset,[role="listitem"],.Qr7Oae,.geS5n,.question,.form-group,[class*="form_item"],[class*="field"]');
     const groupText = group && group !== el.form ? normalize(group.textContent).slice(0, 1600) : '';
     return { own: ownText(el), group, text: normalize([ownText(el), groupText, el.name, el.id, el.autocomplete].join(' ')) };
   }
@@ -48,13 +72,15 @@
   }
   function requiredEvidence(el) {
     const c = context(el);
+    const question = googleQuestion(el);
+    if (googleAria(el) && !question) return false;
     const ariaGroup = el.closest('[role="radiogroup"],[role="group"]');
     // An optional marker always wins, even if a distant/contradictory required flag exists.
-    if (optional.test(c.own) || optional.test(questionText(c.group))) return false;
+    if (optional.test(c.own) || optional.test(question?.text || questionText(c.group))) return false;
     if (el.required || el.getAttribute('aria-required') === 'true') return true;
     if (c.group && ariaGroup && c.group.contains(ariaGroup) && ariaGroup.getAttribute('aria-required') === 'true') return true;
     if (c.group?.getAttribute('aria-required') === 'true') return true;
-    const title = c.group?.querySelector('legend,[role="heading"]');
+    const title = question?.title || c.group?.querySelector('legend,[role="heading"]');
     return !!title && (/必須/.test(title.textContent) || !!title.querySelector('[aria-label="必須の質問"],[aria-label="Required question"]'));
   }
   function googleEmail(el) {
@@ -74,6 +100,14 @@
     if (/いずれか|一つ|ひとつ|1つ|(?:最大|上限)\s*\d+|\d+\s*(?:つ|点|個|商品|種類).*まで/.test(question)) return false;
     return true;
   }
+  function identityNameField(el, purpose, c) {
+    if (purpose !== 'profile' || el.tagName !== 'INPUT' || el.type !== 'text' ||
+        (el.hasAttribute('role') && el.getAttribute('role') !== 'textbox')) return false;
+    if (!/(?:身分証(?:明書)?|本人確認書類|確認書類).{0,24}記載.{0,24}(?:氏名|お名前|姓名|フルネーム)/.test(c.text)) return false;
+    if (/アップロード|upload|添付|提出|選択|確認済|確認しました|認証|番号|コード/i.test(c.text)) return false;
+    // Remove only the document reference; every other manual category still wins.
+    return !manual.test(c.text.replace(/本人確認書類|身分証明書|身分証|確認書類/g, '')) && kind(el) === 'name';
+  }
   function base(el, purpose) {
     if (!pageAllowed()) return 'unsupported-page';
     if (!el || el.ownerDocument !== document || !el.isConnected) return 'stale-target';
@@ -84,7 +118,7 @@
     const style = getComputedStyle(el);
     if (el.hidden || style.display === 'none' || style.visibility === 'hidden' || !el.getClientRects().length) return 'hidden-control';
     const c = context(el);
-    if (manual.test(c.text)) return 'manual-category';
+    if (manual.test(c.text) && !identityNameField(el, purpose, c)) return 'manual-category';
     if (final.test(c.own) && !/^(?:商品)?(?:数量|購入数|希望数)(?:\s|$)/.test(c.own) && !(purpose === 'product' && product(el))) return 'final-action-context';
     const form = el.form || el.closest('form');
     if (form?.querySelector('input[type="password"],input[autocomplete="one-time-code"]')) return 'authentication-form';
@@ -138,5 +172,5 @@
     if (final.test(context(el).own)) return 'final-action-context';
     return '';
   }
-  Object.defineProperty(globalThis, 'LATIASPolicy', { value: Object.freeze({ authorize, kind, negative, keys, context, googleAria }), writable: false, configurable: false });
+  Object.defineProperty(globalThis, 'LATIASPolicy', { value: Object.freeze({ authorize, kind, negative, keys, context, googleAria, googleQuestion, requiredEvidence }), writable: false, configurable: false });
 })();

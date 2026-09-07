@@ -210,3 +210,44 @@ test('unconfirmed Google click never forces aria state or retries; value API can
  assert.equal(await page.locator('#pending').getAttribute('aria-checked'),'false');assert.deepEqual(await page.evaluate(()=>events.map(x=>x.type)),['click']);
  assert.equal(await page.evaluate(()=>{LATIASSafety.begin();const result=LATIASSafety.setValue(document.getElementById('p'),'changed',{purpose:'product'});LATIASSafety.end();return result;}),false);await page.close();
 });
+
+// Representative nesting for the reported inspect result: nearest choice wrappers
+// contain only "はい"; the actual title and required marker are farther up.
+function nestedGoogle(id,title,required=true,role='checkbox',answer='はい') {
+ return `<div class="Qr7Oae" role="listitem"><div class="geS5n"><div class="HoXoMd"><div class="M7eMe">${title}</div>${required?'<span class="vnumgf" aria-label="必須の質問">*</span>':''}</div><div role="${role==='radio'?'radiogroup':'group'}"><div class="geS5n" role="listitem"><div id="${id}" role="${role}" aria-label="${answer}" aria-checked="false" tabindex="0" jscontroller="fixture" jsaction="click:fixture">${answer}</div></div></div></div></div>`;
+}
+function googleRule(actions){return {schemaVersion:2,id:'regression',match:{hosts:['docs.google.com']},stages:[{paths:[{prefix:'/forms/'}],fillActions:actions}]};}
+
+test('Phase 1.2: identity-document name text fills while upload selection and identity assertions remain manual',async()=>{
+ const title='顔写真付き身分証に記載されているお名前を記入してください。';
+ const q=(id,inner,t=title)=>`<div class="Qr7Oae" role="listitem"><div role="heading" id="h${id}">${t}<span aria-label="必須の質問">*</span></div>${inner}</div>`;
+ const page=await fixture(googleForm(q('name','<input type="text" id="name" aria-labelledby="hname" required>')+q('old','<input type="text" id="old" aria-labelledby="hold" value="Manual Name">')+q('file','<input type="file" id="file" aria-labelledby="hfile">')+q('select','<select id="select" aria-labelledby="hselect"><option value="">選択</option><option value="a">氏名</option></select>')+q('assert','<label><input type="checkbox" id="assert" required>はい</label>','本人確認書類を確認しました。')+q('code','<input type="text" id="code" aria-labelledby="hcode">',title+' 本人確認コード')+q('survey','<input type="text" id="survey" aria-labelledby="hsurvey">',title+' アンケート')+'<button id="submit" type="submit" role="checkbox" aria-label="はい">送信</button>'),googleURL);
+ const r=googleRule([{type:'fillProfileByLabel',selector:'input,select,button',labelRegex:'.*',profileKey:'__fullNameExact'},{type:'checkByLabel',selector:'input,button',labelRegex:'.*'}]);
+ await send(page,{type:'FILL_FORM',profile,rule:r});
+ assert.equal(await page.locator('#name').inputValue(),'Test User');assert.equal(await page.locator('#old').inputValue(),'Manual Name');
+ assert.deepEqual(await page.evaluate(()=>events.filter(e=>e.id!=='name')),[]);
+ assert.equal(await page.locator('#assert').isChecked(),false);assert.equal(await page.locator('#file').inputValue(),'');assert.equal(await page.locator('#select').inputValue(),'');await page.close();
+});
+
+test('Phase 1.2: nested Google notice/privacy required yes resolves title and marker and activates once',async()=>{
+ const notice='注意事項を全て確認しました。',privacy='個人情報の取り扱いについて、同意します。';
+ const page=await fixture(googleForm(nestedGoogle('notice',notice)+nestedGoogle('privacy',privacy)+nestedGoogle('radio',privacy,true,'radio')+'<button id="submit" type="submit">送信</button>'),googleURL);await wireGoogle(page);
+ const inspect=await send(page,{type:'INSPECT_FORM'});
+ const item=inspect.data.controls.find(c=>c.id==='notice');assert.match(item.questionContext,/注意事項を全て確認しました/);assert.equal(item.required,true);assert.equal(item.ariaLabel,'はい');
+ assert.equal(await page.evaluate(()=>LATIASPolicy.requiredEvidence(document.getElementById('notice'))),true);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,3);assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,0);
+ assert.deepEqual(await page.evaluate(()=>events.map(e=>[e.type,e.id])),[['click','notice'],['click','privacy'],['click','radio']]);await page.close();
+});
+
+test('Phase 1.2: nested optional negative manual and spoofed choices cannot borrow required consent',async()=>{
+ const title='個人情報の取り扱いについて、同意します。';
+ const html=nestedGoogle('required',title)+nestedGoogle('optional',title,false)+nestedGoogle('optionalNotice','注意事項を全て確認しました。',false)+nestedGoogle('contradiction',title+' 任意',true)+nestedGoogle('no',title,true,'checkbox','いいえ')+nestedGoogle('decline',title,true,'checkbox','同意しない')+['店舗','受取日','本人確認','CAPTCHA','ログイン','アンケート','決済'].map((x,i)=>nestedGoogle('manual'+i,title+x)).join('')+nestedGoogle('spoof',title).replace('<div id="spoof"','<button type="submit" id="spoof"').replace('>はい</div></div></div></div></div>','>はい</button></div></div></div></div>');
+ const page=await fixture(googleForm(html),googleURL);await wireGoogle(page);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,1);assert.deepEqual(await page.evaluate(()=>events.map(e=>e.id)),['required']);await page.close();
+});
+
+test('Phase 1.2: absent or ambiguous Google title fails closed; a neighbouring question cannot grant consent',async()=>{
+ const page=await fixture(googleForm('<div class="Qr7Oae">'+nestedGoogle('neighbour','利用規約')+'<div role="listitem"><div id="orphan" role="checkbox" aria-label="はい" aria-checked="false" tabindex="0" jscontroller="fixture" jsaction="click:fixture">はい</div></div></div>'+nestedGoogle('ambiguous','利用規約').replace('<div class="HoXoMd">','<div role="heading">店舗</div><div class="HoXoMd">')),googleURL);await wireGoogle(page);
+ assert.equal(await page.evaluate(()=>LATIASPolicy.googleQuestion(document.getElementById('orphan'))),null);
+ assert.equal((await send(page,{type:'AGREE_TERMS'})).changed,1);assert.deepEqual(await page.evaluate(()=>events.map(e=>e.id)),['neighbour']);await page.close();
+});

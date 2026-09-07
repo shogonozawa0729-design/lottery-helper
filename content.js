@@ -1,5 +1,5 @@
 (() => {
-  const HELPER_VERSION = '0.9.8.2';
+  const HELPER_VERSION = '0.9.8.3';
   const gateway = globalThis.LATIASSafety;
   if (!gateway) throw new Error('LATIAS Safety Gateway missing');
   if (globalThis.__lotteryHelperCoreVersion && globalThis.__lotteryHelperCoreVersion !== HELPER_VERSION) throw new Error('Reload page to retire previous LATIAS');
@@ -420,6 +420,8 @@
 
   function questionContext(el) {
     if (!el) return '';
+    const googleQuestion = globalThis.LATIASPolicy.googleQuestion(el);
+    if (googleQuestion) return cleanText(googleQuestion.group.textContent, 1800);
     const direct = cleanText([
       getLabelText(el),
       el.getAttribute?.('aria-label'),
@@ -1016,7 +1018,7 @@
         ariaLabel: cleanText(el.getAttribute('aria-label'), 120) || null,
         label: getLabelText(el) || null,
         questionContext: cleanText(questionContext(el), 320) || null,
-        required: !!el.required,
+        required: globalThis.LATIASPolicy.requiredEvidence(el),
         disabled: !!el.disabled,
         readOnly: !!el.readOnly,
       };

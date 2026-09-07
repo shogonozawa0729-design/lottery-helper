@@ -54,5 +54,5 @@ test('ord split kana improvement and corrected spacing are present only in activ
   assert.ok(!content.includes('/[\\\\s　]'));
   assert.ok(content.includes('/[\\s　]'));
   assert.match(content,/identityCorrection: true/);
-  assert.equal(manifest.version,'0.9.8.2');
+  assert.equal(manifest.version,'0.9.8.3');
 });
