@@ -1,0 +1,6 @@
+node_modules/
+test-results/
+
+# Historical snapshots are not executable source
+lottery-helper_ord/
+*.backup-*

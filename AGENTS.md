@@ -28,14 +28,16 @@ The goal is to reduce repetitive form entry while keeping final human control.
 ## Repository map
 
 - `README.md` — product rules and rule-authoring policy.
-- `extension/popup.js` — popup/controller logic, remote rule loading, tab orchestration, and some universal form handling.
-- `extension/question_mapper.js` — question/field interpretation helpers.
-- `extension/rule_enhancer.js` — rule application/enhancement helpers.
+- `popup.js` — popup/controller logic, remote rule loading, tab orchestration, and some universal form handling.
+- `question_mapper.js` — quarantined legacy helper; not loaded or executed.
+- `rule_enhancer.js` — quarantined legacy helper; not loaded or executed.
+- `manifest.json`, `content.js`, `field_policy.js`, `safety_gateway.js`, `rule_candidates.js` — canonical root extension and page operation boundary.
+- `extension/README.md` — pointer only; no second executable source.
 - `rules/index.json` — active adapter registry and rule version.
 - `rules/profile-fields.json` — supported profile field definitions.
 - `rules/*.json` — reusable site/service adapters and form rules.
 
-Important: the GitHub repository may not yet contain every file from the locally installed Chrome extension. Do not invent missing files or assume their implementation. If a task depends on `manifest.json`, `content.js`, popup HTML, options UI, service worker/background scripts, or other missing files, first inspect the local working tree when available and reconcile it with GitHub.
+The repository root is the canonical LATIAS source. Historical ord/backup and extension scripts are retained in Git history and provenance manifests, not in the executable tree. Production installation remains a separate, explicit deployment step.
 
 ## Rule design principles
 

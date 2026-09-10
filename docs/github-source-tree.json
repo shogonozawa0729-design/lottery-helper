@@ -1,0 +1,96 @@
+{
+  "repository": "https://github.com/shogonozawa0729-design/lottery-helper",
+  "commit": "ec6502e659e07cfeed8c5d255b903093b63462a2",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha": "bfd812adb7f6d38b13c7f375d1bc3d26461481c8",
+      "size": 4903
+    },
+    {
+      "path": "README.md",
+      "sha": "7eca2911c951bcc820d8e9b3e3970e9d814bbee2",
+      "size": 1569
+    },
+    {
+      "path": "extension/popup.js",
+      "sha": "e4d8c941226e7d521de9f91edb45ea5a4351ee07",
+      "size": 20538
+    },
+    {
+      "path": "extension/question_mapper.js",
+      "sha": "f85a463dd91afb0a8f6874b511eb263dabf7c75a",
+      "size": 10757
+    },
+    {
+      "path": "extension/rule_enhancer.js",
+      "sha": "33930e7c42c9ec57010b12788110afcd8078eeba",
+      "size": 9840
+    },
+    {
+      "path": "rules/cloud-pass.json",
+      "sha": "37bd848fac52e06defab4a7f22686591517fec2b",
+      "size": 3113
+    },
+    {
+      "path": "rules/customform-universal.json",
+      "sha": "5b0efbd617df7313612a5adb104b86045645819c",
+      "size": 2867
+    },
+    {
+      "path": "rules/furu1.json",
+      "sha": "8dd188c531316f1da2d8d34ed19a02608888f994",
+      "size": 5038
+    },
+    {
+      "path": "rules/google-forms-batoloco-honatsugi.json",
+      "sha": "93decb77ad821ca1baaf958053ae6ec12b13a44f",
+      "size": 2575
+    },
+    {
+      "path": "rules/google-forms-batoloco-maebashi-bunkyo.json",
+      "sha": "09ad956b11f1960c4300060a560eb0d036b443be",
+      "size": 4353
+    },
+    {
+      "path": "rules/google-forms-batoloco-takadanobaba.json",
+      "sha": "69f1bdf743722079422f54578d11466d4e1f7dc2",
+      "size": 2334
+    },
+    {
+      "path": "rules/google-forms-consent-yes-context.json",
+      "sha": "3a09461db19739b963e8641dbdd6e540e7ab605d",
+      "size": 1984
+    },
+    {
+      "path": "rules/google-forms-mint-kichijoji-30th.json",
+      "sha": "9bc33cd5fe0429f3b7940699516bd913d68a5cf4",
+      "size": 2652
+    },
+    {
+      "path": "rules/google-forms-torecaplaza55-30th.json",
+      "sha": "c85f9df24a876c44bdcde8ab2bdb7a3d60b7771f",
+      "size": 14636
+    },
+    {
+      "path": "rules/google-forms-universal.json",
+      "sha": "38ba04a7cb03cca9f6ce13932bae6f87fb206ae4",
+      "size": 8353
+    },
+    {
+      "path": "rules/index.json",
+      "sha": "1828e7ae8506921b316bc03f1f10400c3f06671a",
+      "size": 759
+    },
+    {
+      "path": "rules/livepocket-pao-30th.json",
+      "sha": "8faaff5ad9e3900a6e9b4fe955648f4ccb880c68",
+      "size": 7585
+    },
+    {
+      "path": "rules/profile-fields.json",
+      "sha": "b9480d60ecf47f0043f40f3c72a9dc506e930a13",
+      "size": 2367
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "capturedAtUtc": "2026-09-07T13:29:51.0756277Z",
+  "sourceRoot": "C:\\Users\\shogo\\Documents\\lottery-helper",
+  "rootVersion": "0.9.6",
+  "ordVersion": "0.9.8",
+  "installedChromePath": "UNVERIFIED",
+  "storageKeys": [
+    "profile",
+    "remoteRuleBundleV2"
+  ],
+  "files": [
+    {
+      "path": "background.js",
+      "bytes": 376,
+      "sha256": "4bb8ab6de3098228e13ca1497a9f7af0856aec04e0e0ec72419f0b239df96176"
+    },
+    {
+      "path": "content.js",
+      "bytes": 59464,
+      "sha256": "802a464353272e85a1e4c477f6929ebad6cbe6b758efaec4caf62f57886fafd2"
+    },
+    {
+      "path": "content.js.backup-20260905-000546",
+      "bytes": 41837,
+      "sha256": "bcdbf08e328d98eb636873b63ef8cfebe4c6c0e4b5c8b00aeae88633c5dbe6ff"
+    },
+    {
+      "path": "dynamic_profile_fields.js",
+      "bytes": 3513,
+      "sha256": "b891c1c51a31ef1533cb65d8f4aebe41386bc6d9b49176571181f354cfdac69f"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 857,
+      "sha256": "a373ee00e5077be2103242178ee3765b334d6bcaeb28082a5719306129740657"
+    },
+    {
+      "path": "manifest.json.backup-20260904-215830",
+      "bytes": 881,
+      "sha256": "656e245466105b641faac975773606af4019089ae0c37192429ad0a45870158b"
+    },
+    {
+      "path": "manifest.json.backup-20260904-235529",
+      "bytes": 1623,
+      "sha256": "edb3ae1285917536bb872f56f458d04c97ceaf42c04f1b3559922828c30e73c7"
+    },
+    {
+      "path": "manifest.json.backup-20260905-000546",
+      "bytes": 1687,
+      "sha256": "40e0f3549e743fcb877cc1f8a06d9c9b5567343c702c09cf0ae5572c7fbae52f"
+    },
+    {
+      "path": "manifest.json.backup-20260905-010114",
+      "bytes": 1623,
+      "sha256": "02135288eb49fdb436d75ecf392c2f15bc8ae191ef1113646bbb06d9902869e6"
+    },
+    {
+      "path": "options.html",
+      "bytes": 5311,
+      "sha256": "dbb6510f95e9a75ed56572362fd3525b093d1154c45dd7c2d11918293bf0856b"
+    },
+    {
+      "path": "options.html.backup-20260904-230924",
+      "bytes": 5258,
+      "sha256": "2dab251550503484e6dded84eeb86a4a767ea693edf72b412aede0f23136ed9c"
+    },
+    {
+      "path": "options.js",
+      "bytes": 718,
+      "sha256": "ceddcf7bcc09480236fef291edce60b7a3e3bda5b2c80ba60d5ff18af93d21ce"
+    },
+    {
+      "path": "options.js.backup-20260904-230924",
+      "bytes": 592,
+      "sha256": "2d83a284f2163d457727ccab1850a49e0fff388aba4712d7dd8aaf61f3026cb7"
+    },
+    {
+      "path": "popup.html",
+      "bytes": 1949,
+      "sha256": "5da5a758287d15766453c031aa6e081a06e0d6b636ad02ce964dce5de836e6af"
+    },
+    {
+      "path": "popup.html.backup-20260905-010114",
+      "bytes": 1934,
+      "sha256": "7ebd46f2a856f5be63daff8952992750d29416e6198aa8ef61512adb22585b36"
+    },
+    {
+      "path": "popup.js",
+      "bytes": 9459,
+      "sha256": "709f0b9fefb69f8c4b1310724ffbe1ebd602f63d8cfb2f9d57f4ca3373fefdbf"
+    },
+    {
+      "path": "popup.js.backup-20260905-010114",
+      "bytes": 7222,
+      "sha256": "0d9f1e39e20173023d9349c4bdbda2f05e019448f181f6d9b3c56e39d74dd325"
+    },
+    {
+      "path": "question_mapper.js",
+      "bytes": 5431,
+      "sha256": "3622ecf6977806c9edd11e8262c399282191c0956c2878a33ad8fae95ec30fd4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1287,
+      "sha256": "4fd5d78849c45f2640fde6c2d0e78c20c5cd05a52bd0f1dd1d8908d4b7bdb69e"
+    },
+    {
+      "path": "rule_enhancer.js",
+      "bytes": 7260,
+      "sha256": "3d30956a39664ea479259a06681f60b758b66c509d3a93ebf38e975506ccfc3a"
+    },
+    {
+      "path": "UPDATE_INSTRUCTIONS.txt",
+      "bytes": 1912,
+      "sha256": "c8ea46754b68c6ca2d751b7e9877abda624f6a8490a4718bf8155cbe23e10b00"
+    },
+    {
+      "path": "lottery-helper_ord/background.js",
+      "bytes": 376,
+      "sha256": "4bb8ab6de3098228e13ca1497a9f7af0856aec04e0e0ec72419f0b239df96176"
+    },
+    {
+      "path": "lottery-helper_ord/content.js",
+      "bytes": 62587,
+      "sha256": "e4363d47048120d131846c12ca6e84f3a9a2f479aae1fa52cc3340f1e74475a9"
+    },
+    {
+      "path": "lottery-helper_ord/dynamic_profile_fields.js",
+      "bytes": 3513,
+      "sha256": "b891c1c51a31ef1533cb65d8f4aebe41386bc6d9b49176571181f354cfdac69f"
+    },
+    {
+      "path": "lottery-helper_ord/manifest.json",
+      "bytes": 912,
+      "sha256": "2595579f978aa9d6065803351c33ba754a6c2a1ed0bdccabf239ad85e1f8236a"
+    },
+    {
+      "path": "lottery-helper_ord/options.html",
+      "bytes": 5311,
+      "sha256": "dbb6510f95e9a75ed56572362fd3525b093d1154c45dd7c2d11918293bf0856b"
+    },
+    {
+      "path": "lottery-helper_ord/options.js",
+      "bytes": 718,
+      "sha256": "ceddcf7bcc09480236fef291edce60b7a3e3bda5b2c80ba60d5ff18af93d21ce"
+    },
+    {
+      "path": "lottery-helper_ord/popup.html",
+      "bytes": 1949,
+      "sha256": "c46216586e7f1dd8d86a1b5b8936b6eac53248282508e69853b3c5291e034d9a"
+    },
+    {
+      "path": "lottery-helper_ord/popup.js",
+      "bytes": 9459,
+      "sha256": "a1184f9f9c4060bc376b398f4d56f42d74e0c5d8619ff55505d3e835b6ce36cb"
+    },
+    {
+      "path": "lottery-helper_ord/README.md",
+      "bytes": 1477,
+      "sha256": "59e2a0bc1883ecadf71b1974895ed978ce05399f552b7680beed4d101064a6db"
+    },
+    {
+      "path": "lottery-helper_ord/UPDATE_INSTRUCTIONS.txt",
+      "bytes": 2125,
+      "sha256": "e2f5ed87c0ee5290cf82249caf1d364fbd20c7e028645d50ceb2368312c416bc"
+    }
+  ]
+}

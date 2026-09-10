@@ -1,9 +1,11 @@
 (() => {
+  // Phase 1 quarantine: this legacy independent writer must not be re-injected.
+  // The unchanged implementation below is retained for a later, separate migration.
+  return;
   if (globalThis.__lotteryRuleEnhancerLoaded) return;
   globalThis.__lotteryRuleEnhancerLoaded = true;
 
   const wait = ms => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
-  let enhancementQueue = Promise.resolve();
 
   function norm(value) {
     return String(value || '')
@@ -44,27 +46,6 @@
     try { return new RegExp(action?.labelRegex || '.*', 'iu'); } catch { return null; }
   }
 
-  function nearestQuestionText(el) {
-    if (!el) return '';
-    const own = norm(el.getAttribute?.('aria-label') || el.innerText || '');
-    let node = el.parentElement;
-
-    for (let depth = 0; node && depth < 8; depth++, node = node.parentElement) {
-      const text = norm(node.innerText || '');
-      if (!text) continue;
-
-      const choiceCount = node.querySelectorAll?.(
-        'div[role="checkbox"],div[role="radio"],input[type="checkbox"],input[type="radio"]'
-      )?.length || 0;
-
-      const hasExtraContext = compact(text) !== compact(own) && text.length > own.length + 2;
-      if (!hasExtraContext) continue;
-
-      if (choiceCount >= 1 && text.length <= 2200) return text;
-    }
-    return '';
-  }
-
   function labelText(el) {
     const labels = [];
     if (el?.labels) labels.push(...[...el.labels].map(l => l.innerText));
@@ -78,34 +59,25 @@
     labels.push(
       el?.getAttribute?.('aria-label'),
       el?.closest?.('label')?.innerText,
-      nearestQuestionText(el),
-      el?.closest?.('fieldset, li, tr, [role="listitem"], [class*=field], [class*=form], form')?.innerText
+      el?.closest?.('fieldset, li, tr, [class*=field], [class*=form], form')?.innerText
     );
-    return norm(labels.filter(Boolean).join(' ')).slice(0, 2200);
+    return norm(labels.filter(Boolean).join(' ')).slice(0, 1200);
   }
 
-  function choiceKind(el) {
-    if (!el) return '';
-    const type = String(el.getAttribute?.('type') || '').toLowerCase();
-    if (type === 'checkbox' || type === 'radio') return `native-${type}`;
-    const role = String(el.getAttribute?.('role') || '').toLowerCase();
-    if (role === 'checkbox' || role === 'radio') return `aria-${role}`;
-    return '';
-  }
-
-  function isDisabledChoice(el) {
-    if (!el) return true;
-    if (el.disabled) return true;
-    return String(el.getAttribute?.('aria-disabled') || '').toLowerCase() === 'true';
+  function isHiddenChoice(el) {
+    if (!el) return false;
+    const type = String(el.getAttribute('type') || '').toLowerCase();
+    if (type !== 'checkbox' && type !== 'radio') return false;
+    const st = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return st.display === 'none' || st.visibility === 'hidden' ||
+      st.opacity === '0' || rect.width === 0 || rect.height === 0;
   }
 
   function isChecked(el) {
-    const kind = choiceKind(el);
-    if (kind.startsWith('native-')) return !!el.checked;
-    if (kind.startsWith('aria-')) {
-      return String(el.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
-    }
-    return false;
+    const type = String(el?.getAttribute?.('type') || '').toLowerCase();
+    if (type === 'checkbox' || type === 'radio') return !!el.checked;
+    return String(el?.getAttribute?.('aria-checked') || '').toLowerCase() === 'true';
   }
 
   function linkedChoiceIsOn(el) {
@@ -123,25 +95,31 @@
       } catch {}
     }
 
-    const tightContainer = el.closest?.('fieldset, li, tr, [role="listitem"], [class*=field], [class*=item]');
+    const tightContainer = el.closest?.(
+      'fieldset, li, tr, [role="listitem"], [class*=field], [class*=item]'
+    );
     if (tightContainer) containers.push(tightContainer);
 
     for (const container of containers) {
       if (container.querySelector?.(
         'input[type="checkbox"]:checked, input[type="radio"]:checked,' +
         ' [role="checkbox"][aria-checked="true"], [role="radio"][aria-checked="true"]'
-      )) return true;
+      )) {
+        return true;
+      }
     }
     return false;
   }
 
-  function setNativeCheckedTrue(el) {
-    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
+  function setCheckedTrue(el) {
+    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+
     try {
       const proto = Object.getPrototypeOf(el);
       const desc = proto && Object.getOwnPropertyDescriptor(proto, 'checked');
       if (desc?.set) desc.set.call(el, true);
       else el.checked = true;
+
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return linkedChoiceIsOn(el);
@@ -150,112 +128,93 @@
     }
   }
 
-  async function turnOnNativeChoice(el) {
-    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
-    const changed = setNativeCheckedTrue(el);
+  async function turnOnHiddenChoice(el) {
+    if (!el || el.disabled || linkedChoiceIsOn(el)) return false;
+
+    // ON専用。click() はトグルになるため絶対に使わない。
+    const changed = setCheckedTrue(el);
     if (!changed) return false;
-    await wait(60);
+
+    await wait(80);
     return linkedChoiceIsOn(el);
   }
 
-  async function turnOnAriaChoice(el) {
-    if (!el || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
-    if (!choiceKind(el).startsWith('aria-')) return false;
-
-    try {
-      el.scrollIntoView?.({ block: 'center', inline: 'nearest' });
-
-      // クリック直前にも再確認する。別ルール/別処理が先にONにしていた場合は触らない。
-      if (linkedChoiceIsOn(el)) return false;
-      el.click();
-      await wait(120);
-      if (linkedChoiceIsOn(el)) return true;
-
-      // 通常clickで変化しなかった場合だけフォールバックを1回実行する。
-      if (linkedChoiceIsOn(el)) return false;
-      el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-      el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-      if (!linkedChoiceIsOn(el)) {
-        el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-      }
-      await wait(120);
-      return linkedChoiceIsOn(el);
-    } catch {
-      return false;
-    }
-  }
-
-  async function turnOnChoice(el) {
-    const kind = choiceKind(el);
-    if (!kind || isDisabledChoice(el) || linkedChoiceIsOn(el)) return false;
-    if (kind.startsWith('aria-')) return await turnOnAriaChoice(el);
-    if (kind.startsWith('native-')) return await turnOnNativeChoice(el);
-    return false;
-  }
-
-  async function applyCheckAction(action) {
+  async function applyHiddenCheckAction(action) {
     const rx = actionRegex(action);
     if (!rx) return 0;
 
     const selector = action?.selector ||
-      'div[role="checkbox"],div[role="radio"],input[type="checkbox"],input[type="radio"]';
+      'input[type="checkbox"],input[type="radio"]';
 
     let changed = 0;
-    await wait(Number(action?.enhancerDelayMs) || 120);
+
+    // content.js 側の可視UI処理を先行させ、まだOFFのhidden inputだけ補助する。
+    await wait(Number(action?.enhancerDelayMs) || 700);
 
     for (const el of document.querySelectorAll(selector)) {
-      if (!choiceKind(el) || isDisabledChoice(el) || linkedChoiceIsOn(el)) continue;
+      if (!isHiddenChoice(el) || el.disabled || linkedChoiceIsOn(el)) continue;
+
       const label = labelText(el);
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
 
-      // ensureCheckedByLabel/checkByLabelともに「OFF→ON」だけ。ON→OFFは絶対に行わない。
-      if (await turnOnChoice(el)) changed++;
+      if (await turnOnHiddenChoice(el)) changed++;
     }
+
     return changed;
   }
 
   function selectByText(select, value) {
     const target = compact(value);
     if (!target || !select) return false;
+
     const option = [...select.options].find(o => {
       const text = compact(o.textContent);
       const val = compact(o.value);
       return text === target || val === target || text.includes(target);
     });
-    if (!option || select.value === option.value) return false;
+
+    if (!option) return false;
+
+    const before = select.value;
     select.value = option.value;
     select.dispatchEvent(new Event('input', { bubbles: true }));
     select.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
+    return before !== select.value;
   }
 
   async function applyFixedSelectAction(action) {
     const value = action?.text ?? action?.valueText ?? action?.optionText ?? '';
     if (!value) return 0;
+
     const rx = actionRegex(action);
     if (!rx) return 0;
+
     const selector = action?.selector || 'select';
     let changed = 0;
 
     for (const sel of document.querySelectorAll(selector)) {
       if (sel.tagName !== 'SELECT' || sel.disabled) continue;
+
       const label = labelText(sel);
       rx.lastIndex = 0;
       if (!rx.test(label)) continue;
+
       if (selectByText(sel, value)) {
         changed++;
         await wait(Number(action?.delayMs) || 60);
       }
     }
+
     return changed;
   }
 
   async function applyEnhancements(actions) {
     for (const action of (actions || [])) {
       if (!action?.type) continue;
-      if (action.type === 'checkByLabel' || action.type === 'ensureCheckedByLabel') {
-        await applyCheckAction(action);
+
+      if (action.type === 'checkByLabel') {
+        await applyHiddenCheckAction(action);
       } else if (action.type === 'selectTextByLabel') {
         await applyFixedSelectAction(action);
       }
@@ -268,14 +227,13 @@
 
     const stage = stageForRule(msg.rule);
     if (!stage) return;
-    const actions = msg.type === 'FILL_FORM' ? stage.fillActions : stage.agreeActions;
 
-    // 複数ルール/複数メッセージが来ても同時実行しない。
-    // 前処理でONになったcheckboxを次処理が再クリックしてOFFにする競合を防ぐ。
-    enhancementQueue = enhancementQueue
-      .then(() => applyEnhancements(actions))
-      .catch(error => {
-        console.warn('[LotteryHelper rule enhancer]', error);
-      });
+    const actions = msg.type === 'FILL_FORM'
+      ? stage.fillActions
+      : stage.agreeActions;
+
+    applyEnhancements(actions).catch(error => {
+      console.warn('[LotteryHelper rule enhancer]', error);
+    });
   });
 })();
